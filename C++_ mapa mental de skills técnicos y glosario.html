@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++: skills map and glossary / mapa de skills y glosario</title>
+<style>
+:root{
+  --bg:#0f1419;--panel:#171e26;--panel2:#1d2630;--line:#2a3643;--tx:#e6edf3;--mut:#8b9bab;--acc:#f9d65a;--c1:#4f9cf9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px;max-width:1400px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+header p{margin:0;color:var(--mut);font-size:14px}
+nav{max-width:1400px;margin:12px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center}
+nav button,.lang button{background:var(--panel);color:var(--mut);border:1px solid var(--line);padding:8px 16px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.on{color:var(--tx);border-color:var(--c1);background:var(--panel2)}
+.lang{margin-left:auto;display:flex}
+.lang button{padding:6px 12px;border-radius:0;font-size:13px}
+.lang button:first-child{border-radius:8px 0 0 8px}
+.lang button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.lang button.on{background:var(--acc);color:#0f1419;border-color:var(--acc);font-weight:700}
+main{max-width:1400px;margin:0 auto;padding:12px 24px 40px}
+.view{display:none}.view.on{display:block}
+.map-wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+@media(max-width:1000px){.map-wrap{grid-template-columns:1fr}}
+.map{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;overflow:hidden}
+svg{width:100%;height:auto;display:block}
+.link{stroke:var(--line);stroke-width:1.5;fill:none}
+.leaf{cursor:pointer}
+.leaf circle{stroke-width:2;transition:r .15s}
+.leaf:hover circle,.leaf.sel circle{r:11}
+.leaf text{fill:var(--tx);font-size:12.5px}
+.leaf.sel text{fill:var(--acc);font-weight:600}
+.cat{cursor:pointer}
+.cat text{fill:#0f1419;font-weight:700;font-size:13px;text-anchor:middle}
+.cat.dim,.leaf.dim,.link.dim{opacity:.18}
+.center circle{fill:var(--panel2);stroke:var(--acc);stroke-width:2.5}
+.center text{fill:var(--acc);font-weight:800;font-size:22px;text-anchor:middle}
+.center .sub{fill:var(--mut);font-size:11px;font-weight:400}
+.side{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.side h2{font-size:18px;margin:0 0 4px}
+.badge{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;color:#0f1419;font-weight:600;margin-bottom:10px}
+.side h4{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.side ul{margin:0;padding-left:18px}
+.side li{margin:3px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--panel2);border:1px solid var(--k,var(--line));border-left-width:4px;color:var(--tx);padding:3px 10px;border-radius:8px;font-size:12.5px;cursor:pointer}
+.chip:hover{color:var(--k,var(--acc))}
+.chip.done{opacity:.45;text-decoration:line-through}
+.hint{color:var(--mut);font-size:14px}
+.david{margin-top:14px;padding:10px 12px;border-left:3px solid var(--acc);background:var(--panel2);border-radius:0 8px 8px 0;font-size:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 12px;font-size:12.5px;color:var(--mut)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:var(--k)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+input[type=search]{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);color:var(--tx);padding:10px 14px;border-radius:8px;font:inherit}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;align-items:center}
+.row .lbl{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-right:4px}
+.row button{background:var(--panel);border:1px solid var(--k,var(--line));color:var(--mut);padding:5px 12px;border-radius:99px;cursor:pointer;font-size:13px}
+.row button.on{color:#0f1419;background:var(--k,var(--acc));border-color:var(--k,var(--acc));font-weight:600}
+.row button.cat-btn{color:var(--k)}
+.row button.cat-btn.on{color:#0f1419}
+.stats{display:flex;gap:14px;align-items:center;flex-wrap:wrap;color:var(--mut);font-size:13px;margin:4px 0 12px}
+.prog{flex:0 0 180px;height:6px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:#52c48a}
+.gl{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.term{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--k);border-radius:10px;padding:10px 14px 12px;position:relative}
+.term.isprio{background:linear-gradient(90deg,rgba(249,214,90,.09),var(--panel) 60%);border-color:rgba(249,214,90,.35);border-left-color:var(--k)}
+.term.isdone{opacity:.5}
+.term.flash{box-shadow:0 0 0 2px rgba(249,214,90,.5)}
+.term .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.term b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:var(--k);word-break:break-word}
+.term small{display:block;color:var(--k);opacity:.85;font-size:11.5px;margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
+.term p{margin:4px 0 0;font-size:14px}
+.acts{display:flex;gap:4px;flex:none;-webkit-user-select:none;user-select:none}
+.acts button{-webkit-user-select:none;user-select:none}
+.term b,.term p,.term small{-webkit-user-select:text;user-select:text;cursor:text}
+.acts button{background:var(--panel2);border:1px solid var(--line);color:var(--mut);width:auto;height:28px;padding:0 9px;border-radius:7px;cursor:pointer;font-size:12.5px;white-space:nowrap}
+.acts button:hover{color:var(--tx);border-color:var(--mut)}
+.acts .star.on{color:#0f1419;background:var(--acc);border-color:var(--acc);font-weight:700}
+.acts .ok.on{color:#0f1419;background:#52c48a;border-color:#52c48a;font-weight:700}
+.empty{color:var(--mut);padding:24px;text-align:center;grid-column:1/-1}
+.note{color:var(--mut);font-size:12px;margin-top:18px}
+
+.qwrap{max-width:820px;margin:8px auto 0}
+.qcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.qhead{display:flex;gap:16px;flex-wrap:wrap;align-items:center;color:var(--mut);font-size:13px;margin-bottom:10px}
+.qhead b{color:var(--tx)}
+.qprog{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.qprog i{display:block;height:100%;background:var(--c1);transition:width .25s}
+.qdef{font-size:19px;line-height:1.5;margin:6px 0 20px}
+.qcat{display:inline-block;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--k);border:1px solid var(--k);padding:2px 10px;border-radius:99px}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.qopts{grid-template-columns:1fr}}
+.qopt{display:flex;gap:10px;align-items:center;text-align:left;background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--k);color:var(--tx);padding:12px 14px;border-radius:10px;cursor:pointer;font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+.qopt:hover:not(:disabled){border-color:var(--k);background:#222d3a}
+.qopt .n{color:var(--mut);font-size:12px;min-width:14px}
+.qopt:disabled{cursor:default}
+.qopt.right{background:rgba(82,196,138,.18);border-color:#52c48a;border-left-color:#52c48a}
+.qopt.wrong{background:rgba(239,107,107,.18);border-color:#ef6b6b;border-left-color:#ef6b6b}
+.qopt.faded{opacity:.45}
+.qfb{margin-top:16px;padding:12px 14px;border-radius:10px;background:var(--panel2);font-size:14px}
+.qfb.ok{border-left:4px solid #52c48a}.qfb.bad{border-left:4px solid #ef6b6b}
+.qbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--tx);padding:8px 16px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px}
+.btn:hover{border-color:var(--mut)}
+.btn.primary{background:var(--c1);border-color:var(--c1);color:#0f1419;font-weight:700}
+.btn.on{background:var(--acc);border-color:var(--acc);color:#0f1419;font-weight:700}
+.qscore{font-size:44px;font-weight:800;margin:4px 0}
+.qmiss{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.qmiss li{background:var(--panel2);border-left:4px solid var(--k);border-radius:8px;padding:8px 12px;font-size:14px}
+.qmiss b{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--k)}
+.qkeys{color:var(--mut);font-size:12px;margin-top:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="t-h1"></h1>
+  <p id="t-sub"></p>
+</header>
+<nav>
+  <button id="b-map" class="on"></button>
+  <button id="b-gl"></button>
+  <button id="b-quiz"></button>
+  <div class="lang" role="group" aria-label="Language / Idioma">
+    <button id="l-es">ES</button><button id="l-en">EN</button>
+  </div>
+</nav>
+<main>
+  <section id="v-map" class="view on">
+    <div class="map-wrap">
+      <div class="map">
+        <svg id="svg" viewBox="0 0 1300 1000" role="img"></svg>
+        <div class="legend" id="legend"></div>
+      </div>
+      <aside class="side" id="side"></aside>
+    </div>
+  </section>
+  <section id="v-gl" class="view">
+    <div class="tools">
+      <input type="search" id="q">
+    </div>
+    <div class="row" id="status"></div>
+    <div class="row" id="filters"></div>
+    <div class="stats"><span id="count"></span><div class="prog"><i id="prog"></i></div><span id="pct"></span></div>
+    <div class="gl" id="gl"></div>
+    <p class="note" id="note"></p>
+  </section>
+  <section id="v-quiz" class="view">
+    <div class="qwrap" id="quiz"></div>
+  </section>
+</main>
+
+<script>
+/* DATA-START */
+const CATS=[
+ {id:'lang',name:'Lenguaje base',color:'#4f9cf9'},
+ {id:'perf',name:'Rendimiento y concurrencia',color:'#f59e42'},
+ {id:'tool',name:'Toolchain y calidad',color:'#52c48a'},
+ {id:'dom',name:'Dominios y sistemas',color:'#c078f0'}
+];
+const SKILLS=[
+ {n:1,c:'lang',name:'Sintaxis y semántica',
+  sum:'Dominar las reglas del lenguaje y su significado real: tipos, conversiones, scope, lifetime, valor vs referencia. Es la base para escribir código correcto y rápido, por ejemplo en gráficos o cómputo científico.',
+  study:['Tipos y conversiones implícitas/explícitas','Scope, lifetime y storage duration','const, constexpr y correctness','Qué es comportamiento indefinido'],
+  terms:['Undefined behavior','const','constexpr','Translation unit','Value category']},
+ {n:2,c:'lang',name:'Gestión de memoria',
+  sum:'En C++ la memoria se gestiona de forma manual o semiautomática. Hay que entender punteros, stack vs heap, ownership y evitar fugas. Impacta directo el rendimiento, sobre todo en entornos con pocos recursos.',
+  study:['Stack vs heap','Ownership con RAII y smart pointers','Move semantics','Herramientas: Valgrind y AddressSanitizer'],
+  terms:['Pointer','Reference','Stack','Heap','Memory leak','Dangling pointer','RAII','unique_ptr','shared_ptr','Move semantics','Use-after-free'],
+  david:'Es lo que más cambia viniendo de JS/TS: aquí tú decides quién libera cada recurso. Si compilas C++ a WebAssembly con Emscripten, esto se aplica igual.'},
+ {n:3,c:'lang',name:'Programación orientada a objetos',
+  sum:'Clases, herencia, funciones virtuales y encapsulación para estructurar proyectos grandes. El polimorfismo dinámico permite sistemas flexibles, siempre que se use con criterio para mantener el diseño limpio y reutilizable.',
+  study:['Constructores, destructores y ciclo de vida','Herencia y polimorfismo dinámico','Rule of Three/Five/Zero','Composición sobre herencia'],
+  terms:['Class','Encapsulation','Inheritance','Polymorphism','Virtual function','Vtable','Pure virtual','Virtual destructor','Rule of Three/Five/Zero','Object slicing','override / final','Operator overloading']},
+ {n:4,c:'lang',name:'STL (Standard Template Library)',
+  sum:'La biblioteca estándar de contenedores, iteradores y algoritmos genéricos. Conocerla evita reinventar estructuras y demuestra capacidad para programación genérica con código fiable.',
+  study:['vector, map, unordered_map, set, deque','Iteradores y algoritmos (sort, find, transform)','Complejidad de cada contenedor','string, optional, variant, span'],
+  terms:['STL','Container','Iterator','Algorithm (STL)','std::vector','std::map / unordered_map','Template','Generic programming','std::optional / std::variant','Ranges','Concepts']},
+ {n:6,c:'lang',name:'C++ moderno (11/14/17 y más)',
+  sum:'Cada estándar trae mejoras que hacen el código más corto, seguro y rápido: auto, range-for, smart pointers, lambdas, y luego structured bindings, concepts, ranges, modules y coroutines.',
+  study:['C++11: auto, lambdas, move, nullptr, smart pointers','C++17: optional, variant, structured bindings','C++20: concepts, ranges, coroutines, modules','C++23 y propuestas'],
+  terms:['C++11','C++14','C++17','C++20','C++23','auto','Range-based for','Lambda','nullptr','Structured bindings','Coroutines','Modules'],
+  david:'Es el equivalente a ponerse al día con ES6+ en JavaScript: el estilo moderno cambia casi todo.'},
+ {n:11,c:'lang',name:'Comprensión profunda de C',
+  sum:'C++ nace sobre C y muchos proyectos mezclan código legado en C. Entenderlo da mejor interoperabilidad, programación de bajo nivel y capacidad de depurar secciones críticas.',
+  study:['Punteros y aritmética de punteros','Arrays, strings C y memcpy/strlen','Interop con extern "C"','Structs y layout en memoria'],
+  terms:['extern "C"','Pointer arithmetic','C string','malloc / free','calloc / realloc','void pointer','Function pointer','struct','union','Bit field','Bitwise operators','sizeof','typedef','Macro','Header guard','static','extern','volatile','errno','FILE* / stdio','memcpy / memset','NULL','Array decay','restrict','Format string','ABI','Name mangling','Alignment']},
+
+ {n:5,c:'perf',name:'Concurrencia y multithreading',
+  sum:'Aprovechar varios núcleos con hilos, sincronización y tareas asíncronas. Es clave en juegos, trading y cualquier sistema que necesite respuesta rápida, pero introduce carreras de datos y deadlocks.',
+  study:['std::thread, jthread, async/future','mutex, lock_guard, condition_variable','Atomics y modelo de memoria','Thread pools y tareas'],
+  terms:['Thread','Mutex','lock_guard / unique_lock','Race condition','Data race','Deadlock','Atomic','Condition variable','Future / Promise / async','Memory model','Thread pool','Lock-free']},
+ {n:7,c:'perf',name:'Depuración y optimización',
+  sum:'Encontrar y corregir bugs con depuradores y sanitizers, y mejorar el rendimiento midiendo antes de tocar nada. Importante en software de sistema y embebido.',
+  study:['GDB / LLDB y breakpoints','Sanitizers (ASan, UBSan, TSan)','Profiling con perf, VTune, Tracy','Leer assembly y core dumps'],
+  terms:['Debugger','GDB / LLDB','Sanitizers','Valgrind','Profiler','Core dump','Segmentation fault','Cache locality']},
+ {n:23,c:'perf',name:'Optimización de alto rendimiento',
+  sum:'Técnicas avanzadas para exprimir el hardware: perfilado, layout de datos, cachés, SIMD y multihilo bien dimensionado. Se exige en videojuegos y cómputo científico.',
+  study:['Cache locality y data-oriented design','SIMD / vectorización','Evitar asignaciones en el hot path','Benchmarking con Google Benchmark'],
+  terms:['Cache locality','SIMD','Data-oriented design','Hot path','Inlining','Benchmark','Profiler','Zero-cost abstraction']},
+ {n:21,c:'perf',name:'Sistemas de tiempo real',
+  sum:'Programar donde el tiempo importa más que la velocidad media: sistemas operativos, motores de juego, embebidos. Requiere nociones de RTOS y diseñar para cumplir plazos estrictos.',
+  study:['Conceptos de RTOS','Latencia, jitter y plazos','Evitar asignación dinámica y bloqueos','Programación embebida'],
+  terms:['RTOS','Deadline','Jitter','Latency','Determinism','WCET','Embedded']},
+
+ {n:8,c:'tool',name:'Desarrollo multiplataforma',
+  sum:'Hacer que el mismo código funcione en Windows, Linux y macOS, manejando diferencias de compiladores, APIs del sistema y arquitecturas.',
+  study:['CMake y toolchains','Diferencias GCC / Clang / MSVC','Endianness y tamaños de tipos','Abstracciones de plataforma'],
+  terms:['CMake','GCC / Clang / MSVC','Cross-compilation','Endianness','ABI','Conan / vcpkg']},
+ {n:9,c:'tool',name:'Compilador y linker',
+  sum:'Entender cómo se pasa del código al ejecutable: preprocesado, compilación, enlazado. Sirve para optimizar tiempos de build, resolver errores de enlace y manejar dependencias en proyectos grandes.',
+  study:['Etapas: preprocesador, compilador, assembler, linker','Headers vs sources y ODR','Enlace estático vs dinámico','Flags: -O2, -Wall, -fsanitize'],
+  terms:['Compiler','Preprocessor','Linker','Translation unit','Header / Source','ODR','Static vs dynamic linking','Name mangling','Build flags','Makefile / Ninja','CMake']},
+ {n:10,c:'tool',name:'Control de versiones',
+  sum:'Git para integrar el trabajo de varias personas, revertir errores y entender la evolución del proyecto.',
+  study:['Ramas, merge y rebase','Pull requests y code review','Submódulos y gestión de dependencias'],
+  terms:['Git','Branch / Merge / Rebase','Code review','Pull request']},
+ {n:15,c:'tool',name:'Integración continua (CI)',
+  sum:'Pipelines que compilan y prueban cada cambio automáticamente para detectar bugs temprano y acelerar entregas.',
+  study:['GitHub Actions, GitLab CI, Jenkins','Caché de builds (ccache)','Matriz de compiladores y sistemas','Análisis estático en CI'],
+  terms:['CI / CD','Pipeline','ccache','Static analysis','Code coverage'],
+  david:'Ya manejas Jenkins y GitHub Pages: aquí es lo mismo, pero con builds mucho más lentos.'},
+ {n:19,c:'tool',name:'Pruebas unitarias y QA',
+  sum:'Frameworks de pruebas automáticas para detectar fallos pronto y subir la confiabilidad del software.',
+  study:['GoogleTest / Catch2','Mocks y fakes','Cobertura','Fuzzing'],
+  terms:['Unit test','GoogleTest / Catch2','Mock','Code coverage','Fuzzing','Sanitizers']},
+ {n:18,c:'tool',name:'Escritura técnica',
+  sum:'Documentar código y procesos para que el proyecto sea mantenible por otras personas.',
+  study:['Doxygen','README y ADRs','Comentarios que explican el porqué'],
+  terms:['Doxygen','ADR']},
+ {n:20,c:'tool',name:'Prácticas de código seguro',
+  sum:'Conocer los fallos clásicos de seguridad de C++ y aplicar buenas prácticas para evitarlos de forma consistente.',
+  study:['Buffer overflows y bounds checking','Integer overflow','Guías CERT C++ y Core Guidelines','Herramientas: sanitizers y análisis estático'],
+  terms:['Buffer overflow','Integer overflow','Use-after-free','Race condition','Memory leak','CERT C++ / Core Guidelines','MISRA','Static analysis']},
+
+ {n:12,c:'dom',name:'Desarrollo web / backend',
+  sum:'C++ se usa en servicios backend donde importa la eficiencia de cómputo: lógica del servidor y procesamiento de datos a gran escala.',
+  study:['Sockets y Boost.Asio','HTTP/REST y gRPC','Serialización (protobuf, JSON)','WebAssembly con Emscripten'],
+  terms:['Sockets','Boost.Asio','REST','RPC','gRPC','Protobuf','WebAssembly','Emscripten'],
+  david:'Aquí conectas con tu stack: WebAssembly vía Emscripten ya lo has usado, y es el puente natural entre C++ y el frontend.'},
+ {n:13,c:'dom',name:'Sistemas distribuidos',
+  sum:'Diseñar software que corre en muchas máquinas garantizando consistencia y fiabilidad entre nodos. Típico de servicios cloud y centros de datos.',
+  study:['Consistencia y teorema CAP','Consenso (Raft, Paxos)','Mensajería y colas','Tolerancia a fallos'],
+  terms:['Distributed system','RPC','CAP theorem','Consensus','Message queue','Fault tolerance','Serialization']},
+ {n:14,c:'dom',name:'Bases de datos relacionales',
+  sum:'Integrar aplicaciones C++ con bases relacionales usando SQL y conectores, cuidando rendimiento e integridad de datos.',
+  study:['SQL y normalización','Conectores (ODBC, libpq, SQLite API)','Transacciones y ACID','Prepared statements'],
+  terms:['RDBMS','SQL','SQLite','ODBC','ACID','Prepared statement']},
+ {n:16,c:'dom',name:'Visión por computador',
+  sum:'Algoritmos que procesan imágenes y video para inspección automática, realidad aumentada o robótica, donde la velocidad de cálculo es crítica.',
+  study:['OpenCV','Convoluciones y filtros','Detección de features','Inferencia de modelos (ONNX Runtime, TensorRT)'],
+  terms:['Computer vision','OpenCV','ONNX Runtime','Convolution','SIMD']},
+ {n:17,c:'dom',name:'Gráficos por computador',
+  sum:'C++ domina el rendering en tiempo real: videojuegos, simulaciones y motores. Requiere conocer APIs gráficas y optimizar el pipeline.',
+  study:['OpenGL y Vulkan','Pipeline de renderizado y shaders','Álgebra lineal (GLM)','Motores: Unreal, Godot'],
+  terms:['OpenGL','Vulkan','DirectX','Shader','GPU','Rendering pipeline','GLM'],
+  david:'Es tu terreno: WebGL ≈ OpenGL ES, y WebGPU se parece mucho a Vulkan/Metal/D3D12. Aprender la base en C++ te da el modelo mental real. Además Unreal usa C++.'},
+ {n:22,c:'dom',name:'Desarrollo de GUI',
+  sum:'Frameworks como Qt o wxWidgets para crear aplicaciones de escritorio con interfaz amigable.',
+  study:['Qt (Widgets y QML)','Signals y slots / event loop','Layouts y modelo-vista'],
+  terms:['GUI','Qt','wxWidgets','Event loop','Signals and slots']}
+];
+
+const G=(t,c,d)=>({t,c,d});
+const GLOSS=[
+ // Lenguaje
+ G('Undefined behavior','Lenguaje','Código cuyo resultado el estándar no define (acceder fuera de límites, overflow con signo, usar memoria liberada). El compilador puede hacer cualquier cosa, incluso aparentar que funciona.'),
+ G('const','Lenguaje','Marca un valor, referencia o método como no modificable. Ayuda a evitar bugs y a que el compilador optimice.'),
+ G('constexpr','Lenguaje','Permite evaluar funciones y valores en tiempo de compilación.'),
+ G('Translation unit','Lenguaje','Un archivo fuente con todos sus #include ya expandidos. Es lo que el compilador procesa de una vez; cada una genera un .o.'),
+ G('Value category','Lenguaje','Clasificación de expresiones (lvalue, rvalue, xvalue...) que decide si algo se copia o se mueve.'),
+ G('auto','Lenguaje','Deja que el compilador deduzca el tipo de una variable a partir de su inicializador.'),
+ G('Range-based for','Lenguaje','Bucle for (x : coleccion) que recorre un contenedor sin manejar iteradores a mano.'),
+ G('Lambda','Lenguaje','Función anónima definida en el sitio, con lista de captura de variables: [&](int x){ ... }.'),
+ G('nullptr','Lenguaje','Literal tipado para puntero nulo; reemplaza a NULL y a 0 en ese rol.'),
+ G('Structured bindings','Lenguaje','Desempaqueta pares, tuplas o structs en varias variables: auto [a, b] = f();'),
+ G('Coroutines','Lenguaje','Funciones que pueden suspenderse y reanudarse (co_await, co_yield). Base para código asíncrono y generadores. C++20.'),
+ G('Modules','Lenguaje','Alternativa a los headers que mejora tiempos de compilación y aislamiento. C++20.'),
+ G('C++11','Lenguaje','Estándar que modernizó el lenguaje: auto, lambdas, move semantics, smart pointers, nullptr, threads en la librería estándar.'),
+ G('C++14','Lenguaje','Refinamiento de C++11: lambdas genéricas, deducción de retorno, make_unique.'),
+ G('C++17','Lenguaje','Añade optional, variant, string_view, structured bindings, if constexpr y filesystem.'),
+ G('C++20','Lenguaje','Añade concepts, ranges, coroutines, modules y el operador <=>.'),
+ G('C++23','Lenguaje','Añade std::expected, std::print, mdspan y mejoras a ranges y módulos.'),
+ G('Operator overloading','Lenguaje','Redefinir operadores (+, ==, <<, []) para tipos propios.'),
+ G('extern "C"','C','Indica enlace con convención de C: sin name mangling. Necesario para interoperar con C o con otros lenguajes.'),
+ G('C string','C','Array de char terminado en \\0. Fuente clásica de errores de buffer.'),
+ G('Pointer arithmetic','C','Sumar o restar a un puntero se mueve en unidades del tipo apuntado, no en bytes.'),
+ G('Alignment','Lenguaje','Restricción de que un dato esté en una dirección múltiplo de cierto valor. Afecta rendimiento y compatibilidad.'),
+ G('malloc / free','C','Funciones de C para reservar y liberar memoria dinámica en el heap. Cada malloc debe tener su free, o hay fuga de memoria.'),
+ G('calloc / realloc','C','calloc reserva memoria inicializada en cero; realloc cambia el tamaño de un bloque ya reservado (puede moverlo).'),
+ G('void pointer','C','Puntero genérico (void *) que puede apuntar a cualquier tipo. Hay que convertirlo antes de desreferenciarlo; es la base de la genericidad en C.'),
+ G('Function pointer','C','Puntero que guarda la dirección de una función, para pasarla como argumento o elegirla en runtime (ej. el callback de qsort).'),
+ G('struct','C','Agrupa variables de distintos tipos bajo un nombre. Es la base para modelar datos en C, que no tiene clases.'),
+ G('union','C','Como un struct, pero todos los campos comparten la misma memoria: solo uno es válido a la vez. Útil para ahorrar memoria o reinterpretar bytes.'),
+ G('Bit field','C','Campo de un struct con un ancho en bits (int flag : 1). Sirve para empaquetar banderas o mapear registros de hardware.'),
+ G('Bitwise operators','C','Operadores que trabajan bit a bit: & | ^ ~ << >>. Fundamentales para máscaras, banderas y programación de bajo nivel.'),
+ G('sizeof','C','Operador que devuelve el tamaño en bytes de un tipo o variable, calculado en compilación.'),
+ G('typedef','C','Crea un alias para un tipo existente. Se usa mucho con structs y punteros a función para simplificar la sintaxis.'),
+ G('Macro','C','Texto que el preprocesador sustituye antes de compilar (#define). Potente pero sin tipos y propenso a errores.'),
+ G('Header guard','C','Patrón (#ifndef / #define / #endif o #pragma once) que evita incluir un header más de una vez.'),
+ G('static','C','En C tiene dos usos: dentro de una función, la variable conserva su valor entre llamadas; a nivel de archivo, limita el símbolo a ese archivo.'),
+ G('extern','C','Declara que una variable o función está definida en otro archivo; se resuelve al enlazar.'),
+ G('volatile','C','Le dice al compilador que un valor puede cambiar fuera del programa (hardware, interrupción), así que no debe optimizar sus accesos.'),
+ G('errno','C','Variable global (por hilo) donde las funciones de la librería estándar de C dejan el código del último error.'),
+ G('FILE* / stdio','C','Manejador de archivos de la librería estándar de C (fopen, fread, fprintf, fclose). Hay que cerrarlos para evitar fugas.'),
+ G('memcpy / memset','C','memcpy copia bytes de una zona de memoria a otra; memset rellena una zona con un valor. Operan sin conocer tipos y no controlan límites.'),
+ G('NULL','C','Constante de puntero nulo en C (normalmente ((void*)0)). Desreferenciarlo causa un crash.'),
+ G('Array decay','C','Al pasar un array a una función, se convierte en un puntero a su primer elemento y se pierde su tamaño.'),
+ G('restrict','C','Promesa al compilador de que un puntero es el único acceso a ese dato, lo que permite optimizar más. Existe en C99, no en C++ estándar.'),
+ G('Format string','C','Cadena de formato de printf/scanf (%d, %s). Si la controla un atacante o no coincide con los argumentos, hay bugs y vulnerabilidades.'),
+ // Memoria
+ G('Pointer','Memoria','Variable que guarda una dirección de memoria. Puede ser nula y reasignarse.'),
+ G('Reference','Memoria','Alias de otro objeto; debe inicializarse y no puede reasignarse a otro. Más segura que un puntero.'),
+ G('Stack','Memoria','Región de memoria para variables locales y llamadas. Asignación muy rápida y liberación automática al salir del scope.'),
+ G('Heap','Memoria','Memoria dinámica reservada en tiempo de ejecución (new/malloc). Más flexible pero más lenta y propensa a fugas.'),
+ G('Memory leak','Memoria','Memoria reservada que nunca se libera, y se pierde la referencia a ella.'),
+ G('Dangling pointer','Memoria','Puntero a memoria que ya fue liberada o a un objeto que ya no existe.'),
+ G('Use-after-free','Memoria','Usar memoria después de liberarla. Bug de memoria y vulnerabilidad clásica.'),
+ G('RAII','Memoria','Resource Acquisition Is Initialization: un recurso (memoria, archivo, lock) se adquiere en el constructor y se libera en el destructor. Es el idioma central de C++.'),
+ G('unique_ptr','Memoria','Smart pointer con propiedad exclusiva: un solo dueño, se libera solo, no se copia (solo se mueve).'),
+ G('shared_ptr','Memoria','Smart pointer con propiedad compartida mediante conteo de referencias. Cuidado con ciclos (usar weak_ptr).'),
+ G('Move semantics','Memoria','Transferir recursos de un objeto a otro en vez de copiarlos (std::move, constructor de movimiento). Evita copias costosas.'),
+ G('Rule of Three/Five/Zero','Memoria','Si defines destructor, copia o movimiento a mano, probablemente debas definir los demás (Three/Five). Lo ideal es no definir ninguno (Zero) y delegar en RAII.'),
+ G('Object slicing','Memoria','Al copiar un objeto derivado a uno base por valor se pierde la parte derivada.'),
+ G('Cache locality','Memoria','Acceder a datos contiguos aprovecha la caché del CPU y puede ser decenas de veces más rápido que saltar por punteros.'),
+ G('Segmentation fault','Memoria','Crash por acceso inválido a memoria (puntero nulo, fuera de rango, memoria liberada).'),
+ G('Buffer overflow','Memoria','Escribir más allá del final de un buffer. Causa corrupción o ejecución de código arbitrario.'),
+ G('Integer overflow','Memoria','Resultado de una operación entera que no cabe en el tipo. En enteros con signo es comportamiento indefinido.'),
+ // POO
+ G('Class','POO','Tipo definido por el usuario que agrupa datos y funciones. La diferencia con struct es solo que los miembros son privados por defecto.'),
+ G('Encapsulation','POO','Ocultar el estado interno y exponer solo una interfaz controlada (public/private/protected).'),
+ G('Inheritance','POO','Una clase deriva de otra y reutiliza o extiende su comportamiento.'),
+ G('Polymorphism','POO','Usar objetos de distintos tipos a través de una interfaz común. En C++ puede ser dinámico (virtual) o estático (templates).'),
+ G('Virtual function','POO','Método que se resuelve en tiempo de ejecución según el tipo real del objeto.'),
+ G('Vtable','POO','Tabla de punteros a funciones virtuales que el compilador asocia a cada clase polimórfica.'),
+ G('Pure virtual','POO','Método virtual sin implementación (= 0). Convierte la clase en abstracta.'),
+ G('Virtual destructor','POO','Necesario en clases base polimórficas para que borrar por puntero base destruya correctamente al derivado.'),
+ G('override / final','POO','override verifica que realmente sobrescribes un virtual; final prohíbe seguir sobrescribiendo o heredando.'),
+ // STL y genéricos
+ G('STL','Genéricos','Standard Template Library: contenedores, iteradores y algoritmos genéricos de la librería estándar.'),
+ G('Container','Genéricos','Estructura que guarda elementos: vector, list, map, set, deque, array.'),
+ G('Iterator','Genéricos','Objeto que apunta a un elemento y permite recorrer un contenedor; conecta contenedores con algoritmos.'),
+ G('Algorithm (STL)','Genéricos','Funciones genéricas como sort, find, transform, accumulate que trabajan sobre rangos de iteradores.'),
+ G('std::vector','Genéricos','Arreglo dinámico contiguo en memoria. Es el contenedor por defecto en casi todo caso.'),
+ G('std::map / unordered_map','Genéricos','map es un árbol ordenado (O(log n)); unordered_map es una tabla hash (O(1) promedio).'),
+ G('std::optional / std::variant','Genéricos','optional representa un valor que puede no existir; variant, uno de varios tipos posibles (unión segura).'),
+ G('Template','Genéricos','Código parametrizado por tipos o valores que se genera en compilación. Base de la programación genérica.'),
+ G('Generic programming','Genéricos','Escribir algoritmos independientes del tipo concreto de dato.'),
+ G('Concepts','Genéricos','Restricciones nombradas sobre los parámetros de un template, con errores de compilación más legibles. C++20.'),
+ G('Ranges','Genéricos','Biblioteca de C++20 para componer algoritmos sobre secuencias con pipes (|) y vistas perezosas.'),
+ G('Zero-cost abstraction','Genéricos','Principio de C++: lo que no usas no cuesta, y lo que usas no se podría escribir a mano más rápido.'),
+ // Concurrencia
+ G('Thread','Concurrencia','Hilo de ejecución independiente dentro de un proceso (std::thread).'),
+ G('Mutex','Concurrencia','Exclusión mutua: solo un hilo a la vez puede entrar a una sección crítica.'),
+ G('lock_guard / unique_lock','Concurrencia','Wrappers RAII que toman y sueltan un mutex automáticamente.'),
+ G('Race condition','Concurrencia','El resultado depende del orden de ejecución entre hilos, que no está controlado.'),
+ G('Data race','Concurrencia','Dos hilos acceden a la misma memoria sin sincronizar y al menos uno escribe. Es comportamiento indefinido en C++.'),
+ G('Deadlock','Concurrencia','Hilos que se esperan entre sí indefinidamente.'),
+ G('Atomic','Concurrencia','Tipos cuyas operaciones se realizan de forma indivisible (std::atomic).'),
+ G('Condition variable','Concurrencia','Permite a un hilo dormir hasta que otro lo notifique de que algo cambió.'),
+ G('Future / Promise / async','Concurrencia','Mecanismo para obtener un resultado calculado en otro hilo (std::async, std::future).'),
+ G('Memory model','Concurrencia','Reglas que definen qué escrituras ven otros hilos y en qué orden (memory_order).'),
+ G('Thread pool','Concurrencia','Conjunto de hilos reutilizables que ejecutan tareas de una cola.'),
+ G('Lock-free','Concurrencia','Estructuras concurrentes que evitan locks usando operaciones atómicas. Difíciles de acertar.'),
+ // Rendimiento
+ G('SIMD','Rendimiento','Una instrucción procesa varios datos a la vez (SSE, AVX, NEON).'),
+ G('Data-oriented design','Rendimiento','Organizar los datos según cómo se procesan (arrays de structs vs structs de arrays) para aprovechar la caché.'),
+ G('Hot path','Rendimiento','Fragmento de código que se ejecuta con muchísima frecuencia y donde vale la pena optimizar.'),
+ G('Inlining','Rendimiento','El compilador reemplaza una llamada a función por su cuerpo, evitando el costo de la llamada y abriendo más optimizaciones.'),
+ G('Benchmark','Rendimiento','Medición repetible del tiempo de ejecución de un fragmento de código (ej. Google Benchmark).'),
+ G('Profiler','Rendimiento','Herramienta que mide dónde gasta tiempo o memoria un programa (perf, VTune, Instruments, Tracy).'),
+ // Tiempo real
+ G('RTOS','Tiempo real','Sistema operativo de tiempo real con planificación determinista (FreeRTOS, Zephyr).'),
+ G('Deadline','Tiempo real','Plazo máximo para completar una tarea.'),
+ G('Jitter','Tiempo real','Variación en el tiempo de respuesta entre ejecuciones.'),
+ G('Latency','Tiempo real','Tiempo entre un evento o petición y su respuesta.'),
+ G('Determinism','Tiempo real','Propiedad de que el tiempo y el resultado sean predecibles.'),
+ G('WCET','Tiempo real','Worst-Case Execution Time: tiempo máximo posible de una tarea.'),
+ G('Embedded','Tiempo real','Software que corre dentro de un dispositivo con recursos limitados (microcontroladores).'),
+ // Build
+ G('Compiler','Build','Traduce código C++ a código objeto. Los principales son GCC, Clang y MSVC.'),
+ G('Preprocessor','Build','Etapa previa que resuelve #include, #define y #if antes de compilar.'),
+ G('Linker','Build','Une los archivos objeto y librerías en un ejecutable o librería, resolviendo símbolos.'),
+ G('Header / Source','Build','Los .h/.hpp declaran la interfaz; los .cpp contienen la implementación.'),
+ G('ODR','Build','One Definition Rule: cada entidad puede definirse una sola vez en el programa. Violarla causa errores de enlace o UB.'),
+ G('Static vs dynamic linking','Build','Estático copia el código al ejecutable (.a/.lib); dinámico lo carga en runtime (.so/.dll).'),
+ G('Name mangling','Build','El compilador codifica el nombre y los parámetros de una función en el símbolo, para soportar sobrecarga.'),
+ G('ABI','Build','Application Binary Interface: contrato binario (layout, convención de llamada) entre código compilado por separado.'),
+ G('Build flags','Build','Opciones del compilador: -O2/-O3 (optimización), -Wall -Wextra (warnings), -g (debug), -std=c++20.'),
+ G('Makefile / Ninja','Build','Herramientas que ejecutan el build según un grafo de dependencias.'),
+ G('CMake','Build','Generador de sistemas de build multiplataforma; estándar de facto en proyectos C++.'),
+ G('Conan / vcpkg','Build','Gestores de paquetes para dependencias C++.'),
+ G('GCC / Clang / MSVC','Build','Los tres compiladores principales: GNU, LLVM y Microsoft.'),
+ G('Cross-compilation','Build','Compilar en una plataforma para ejecutar en otra (ej. ARM desde x86).'),
+ G('Endianness','Build','Orden de los bytes de un número en memoria (little-endian o big-endian).'),
+ // Calidad y herramientas
+ G('Debugger','Calidad','Permite pausar la ejecución, inspeccionar variables y avanzar paso a paso.'),
+ G('GDB / LLDB','Calidad','Depuradores de línea de comandos para GCC y para LLVM respectivamente.'),
+ G('Sanitizers','Calidad','Instrumentación del compilador que detecta errores en runtime: ASan (memoria), UBSan (UB), TSan (data races), MSan (memoria sin inicializar).'),
+ G('Valgrind','Calidad','Herramienta que detecta fugas y accesos inválidos ejecutando el programa en una máquina virtual (lento).'),
+ G('Core dump','Calidad','Volcado de la memoria de un proceso al crashear, para analizarlo con un depurador.'),
+ G('Static analysis','Calidad','Detección de bugs sin ejecutar el código (clang-tidy, cppcheck, SonarQube).'),
+ G('Unit test','Calidad','Prueba automática de una unidad pequeña de código.'),
+ G('GoogleTest / Catch2','Calidad','Frameworks de testing más usados en C++.'),
+ G('Mock','Calidad','Objeto falso que reemplaza una dependencia para aislar lo que se prueba (GoogleMock).'),
+ G('Code coverage','Calidad','Porcentaje de líneas o ramas que ejecutan las pruebas (gcov, llvm-cov).'),
+ G('Fuzzing','Calidad','Probar con entradas aleatorias o mutadas para encontrar crashes (libFuzzer, AFL).'),
+ G('CI / CD','Calidad','Integración continua / entrega continua: automatizar build, tests y despliegue en cada cambio.'),
+ G('Pipeline','Calidad','Secuencia automática de etapas de CI (build, test, análisis, release).'),
+ G('ccache','Calidad','Caché de compilación que evita recompilar archivos sin cambios.'),
+ G('Git','Calidad','Sistema de control de versiones distribuido.'),
+ G('Branch / Merge / Rebase','Calidad','Ramas para trabajo paralelo, y dos formas de integrarlas: merge preserva historia, rebase la reescribe linealmente.'),
+ G('Code review','Calidad','Revisión del código por otras personas antes de integrarlo.'),
+ G('Pull request','Calidad','Propuesta de cambios para revisión e integración en una rama.'),
+ G('Doxygen','Calidad','Generador de documentación a partir de comentarios en el código.'),
+ G('ADR','Calidad','Architecture Decision Record: documento corto que registra una decisión técnica y su motivo.'),
+ G('CERT C++ / Core Guidelines','Calidad','Guías de codificación segura (CERT) y de buenas prácticas (C++ Core Guidelines de Stroustrup y Sutter).'),
+ G('MISRA','Calidad','Estándar de codificación para sistemas críticos de seguridad (automotriz, aeroespacial).'),
+ // Dominios
+ G('Sockets','Redes','API para comunicación de red TCP/UDP entre procesos.'),
+ G('Boost.Asio','Redes','Biblioteca de I/O asíncrono y redes; base del networking en el estándar propuesto.'),
+ G('REST','Redes','Estilo de API sobre HTTP con recursos y verbos.'),
+ G('RPC','Redes','Remote Procedure Call: llamar a una función que se ejecuta en otra máquina o proceso como si fuera una llamada local. gRPC es una implementación moderna.'),
+ G('gRPC','Redes','Framework RPC de alto rendimiento sobre HTTP/2 con Protobuf.'),
+ G('Protobuf','Redes','Formato binario de serialización compacto y con esquema, de Google.'),
+ G('Serialization','Redes','Convertir objetos en bytes o texto para guardarlos o enviarlos.'),
+ G('WebAssembly','Web','Formato binario que corre en el navegador a velocidad casi nativa; destino de compilación de C++.'),
+ G('Emscripten','Web','Toolchain que compila C/C++ a WebAssembly y genera el glue de JavaScript.'),
+ G('Distributed system','Sistemas distribuidos','Sistema compuesto por varias máquinas que coordinan para actuar como uno.'),
+ G('CAP theorem','Sistemas distribuidos','En una partición de red solo puedes garantizar consistencia o disponibilidad, no ambas.'),
+ G('Consensus','Sistemas distribuidos','Protocolos (Raft, Paxos) para que nodos acuerden un valor aun con fallos.'),
+ G('Message queue','Sistemas distribuidos','Cola intermedia que desacopla productores y consumidores (Kafka, RabbitMQ).'),
+ G('Fault tolerance','Sistemas distribuidos','Capacidad de seguir funcionando cuando algún componente falla.'),
+ G('RDBMS','Datos','Sistema de gestión de bases de datos relacionales (PostgreSQL, MySQL, SQL Server).'),
+ G('SQL','Datos','Lenguaje de consulta para bases relacionales.'),
+ G('SQLite','Datos','Base de datos relacional embebida en un solo archivo, con API en C.'),
+ G('ODBC','Datos','Interfaz estándar para conectar con distintas bases de datos.'),
+ G('ACID','Datos','Atomicidad, Consistencia, Aislamiento, Durabilidad: garantías de una transacción.'),
+ G('Prepared statement','Datos','Consulta SQL precompilada con parámetros; mejora rendimiento y evita inyección SQL.'),
+ G('Computer vision','Visión','Procesamiento de imágenes y video para extraer información.'),
+ G('OpenCV','Visión','Librería de visión por computador escrita en C++.'),
+ G('ONNX Runtime','Visión','Motor para ejecutar modelos de ML exportados a ONNX con API en C++.'),
+ G('Convolution','Visión','Operación que aplica un kernel sobre una imagen (blur, bordes, CNNs).'),
+ G('OpenGL','Gráficos','API gráfica multiplataforma clásica. WebGL es su variante para navegador.'),
+ G('Vulkan','Gráficos','API gráfica moderna de bajo nivel con control explícito de la GPU.'),
+ G('DirectX','Gráficos','Familia de APIs gráficas de Microsoft (Direct3D 11/12).'),
+ G('Shader','Gráficos','Programa que se ejecuta en la GPU (vértices, fragmentos, compute).'),
+ G('GPU','Gráficos','Procesador masivamente paralelo para gráficos y cómputo.'),
+ G('Rendering pipeline','Gráficos','Etapas que transforman geometría en píxeles: vértices, rasterización, fragmentos.'),
+ G('GLM','Gráficos','Librería matemática C++ (vectores, matrices) que imita la sintaxis de GLSL.'),
+ G('GUI','GUI','Graphical User Interface: interfaz gráfica con ventanas, botones y menús, en contraste con la línea de comandos (CLI). En C++ se hace con frameworks como Qt o wxWidgets.'),
+ G('Qt','GUI','Framework multiplataforma de GUI y utilidades (Widgets y QML).'),
+ G('wxWidgets','GUI','Framework GUI multiplataforma que usa widgets nativos.'),
+ G('Event loop','GUI','Bucle que espera y despacha eventos (clicks, timers, red).'),
+ G('Signals and slots','GUI','Mecanismo de Qt para conectar eventos con manejadores sin acoplamiento fuerte.')
+];
+/* DATA-END */
+
+/* EN-START */
+const CAT_LINES={
+ es:{lang:['Lenguaje','base'],perf:['Rendimiento','y concurrencia'],tool:['Toolchain','y calidad'],dom:['Dominios','y sistemas']},
+ en:{lang:['Language','core'],perf:['Performance','& concurrency'],tool:['Toolchain','& quality'],dom:['Domains','& systems']}
+};
+const GCAT={
+ 'Lenguaje':{color:'#4f9cf9',es:'Lenguaje',en:'Language'},
+ 'C':{color:'#e8e8e8',es:'C',en:'C'},
+ 'Memoria':{color:'#ef6b6b',es:'Memoria',en:'Memory'},
+ 'POO':{color:'#c078f0',es:'POO',en:'OOP'},
+ 'Genéricos':{color:'#35c2c2',es:'Genéricos y STL',en:'Generics & STL'},
+ 'Concurrencia':{color:'#f59e42',es:'Concurrencia',en:'Concurrency'},
+ 'Rendimiento':{color:'#f2c744',es:'Rendimiento',en:'Performance'},
+ 'Tiempo real':{color:'#ff7eb6',es:'Tiempo real',en:'Real-time'},
+ 'Build':{color:'#8fd14f',es:'Build',en:'Build'},
+ 'Calidad':{color:'#52c48a',es:'Calidad y herramientas',en:'Quality & tools'},
+ 'Redes':{color:'#7b8cff',es:'Redes',en:'Networking'},
+ 'Web':{color:'#ff9f7a',es:'Web',en:'Web'},
+ 'Sistemas distribuidos':{color:'#b39ddb',es:'Sistemas distribuidos',en:'Distributed systems'},
+ 'Datos':{color:'#4dd0e1',es:'Datos',en:'Data'},
+ 'Visión':{color:'#d4a373',es:'Visión',en:'Vision'},
+ 'Gráficos':{color:'#f06ac8',es:'Gráficos',en:'Graphics'},
+ 'GUI':{color:'#a9bccf',es:'GUI',en:'GUI'}
+};
+const SKILLS_EN={
+ 1:{name:'Syntax and semantics',sum:'Mastering the rules of the language and what they really mean: types, conversions, scope, lifetime, value vs reference. It is the base for writing correct, fast code, for example in graphics or scientific computing.',study:['Types and implicit/explicit conversions','Scope, lifetime and storage duration','const, constexpr and const-correctness','What undefined behavior is']},
+ 2:{name:'Memory management',sum:'In C++ memory is managed manually or semi-automatically. You need pointers, stack vs heap and ownership, and you must avoid leaks. It directly affects performance, especially in resource-constrained environments.',study:['Stack vs heap','Ownership with RAII and smart pointers','Move semantics','Tools: Valgrind and AddressSanitizer'],david:'This is what changes most coming from JS/TS: here you decide who frees each resource. If you compile C++ to WebAssembly with Emscripten, it applies the same way.'},
+ 3:{name:'Object-oriented programming',sum:'Classes, inheritance, virtual functions and encapsulation to structure large projects. Dynamic polymorphism allows flexible systems when used with judgment, keeping the design clean and reusable.',study:['Constructors, destructors and object lifetime','Inheritance and dynamic polymorphism','Rule of Three/Five/Zero','Composition over inheritance']},
+ 4:{name:'STL (Standard Template Library)',sum:'The standard library of containers, iterators and generic algorithms. Knowing it avoids reinventing data structures and shows you can do generic programming with reliable code.',study:['vector, map, unordered_map, set, deque','Iterators and algorithms (sort, find, transform)','Complexity of each container','string, optional, variant, span']},
+ 6:{name:'Modern C++ (11/14/17 and beyond)',sum:'Each standard brings improvements that make code shorter, safer and faster: auto, range-for, smart pointers, lambdas, and later structured bindings, concepts, ranges, modules and coroutines.',study:['C++11: auto, lambdas, move, nullptr, smart pointers','C++17: optional, variant, structured bindings','C++20: concepts, ranges, coroutines, modules','C++23 and proposals'],david:'It is the equivalent of catching up with ES6+ in JavaScript: the modern style changes almost everything.'},
+ 11:{name:'Deep understanding of C',sum:'C++ is built on C, and many projects mix in legacy C code. Understanding it gives better interoperability, low-level programming and the ability to debug performance-critical sections.',study:['Pointers and pointer arithmetic','Arrays, C strings and memcpy/strlen','Interop with extern "C"','Structs and memory layout']},
+ 5:{name:'Concurrency and multithreading',sum:'Use several cores with threads, synchronization and async tasks. Key in games, trading and any system that needs fast response, but it introduces data races and deadlocks.',study:['std::thread, jthread, async/future','mutex, lock_guard, condition_variable','Atomics and the memory model','Thread pools and tasks']},
+ 7:{name:'Debugging and optimization',sum:'Find and fix bugs with debuggers and sanitizers, and improve performance by measuring before touching anything. Important in systems and embedded software.',study:['GDB / LLDB and breakpoints','Sanitizers (ASan, UBSan, TSan)','Profiling with perf, VTune, Tracy','Reading assembly and core dumps']},
+ 23:{name:'High-performance optimization',sum:'Advanced techniques to squeeze the hardware: profiling, data layout, caches, SIMD and well-sized multithreading. Expected in video games and scientific computing.',study:['Cache locality and data-oriented design','SIMD / vectorization','Avoid allocations in the hot path','Benchmarking with Google Benchmark']},
+ 21:{name:'Real-time systems',sum:'Programming where timing matters more than average speed: operating systems, game engines, embedded. It requires RTOS notions and designing to meet strict deadlines.',study:['RTOS concepts','Latency, jitter and deadlines','Avoid dynamic allocation and blocking','Embedded programming']},
+ 8:{name:'Cross-platform development',sum:'Make the same code work on Windows, Linux and macOS, handling differences in compilers, system APIs and architectures.',study:['CMake and toolchains','GCC / Clang / MSVC differences','Endianness and type sizes','Platform abstractions']},
+ 9:{name:'Compiler and linker',sum:'Understand how code becomes an executable: preprocessing, compiling, linking. It helps optimize build times, fix link errors and manage dependencies in large projects.',study:['Stages: preprocessor, compiler, assembler, linker','Headers vs sources and ODR','Static vs dynamic linking','Flags: -O2, -Wall, -fsanitize']},
+ 10:{name:'Version control',sum:'Git to integrate the work of several people, revert mistakes and understand how the project evolved.',study:['Branches, merge and rebase','Pull requests and code review','Submodules and dependency management']},
+ 15:{name:'Continuous integration (CI)',sum:'Pipelines that build and test every change automatically to catch bugs early and speed up delivery.',study:['GitHub Actions, GitLab CI, Jenkins','Build caching (ccache)','Compiler and OS matrix','Static analysis in CI'],david:'You already use Jenkins and GitHub Pages: it is the same idea here, but with much slower builds.'},
+ 19:{name:'Unit testing and QA',sum:'Automated testing frameworks to catch failures early and raise software reliability.',study:['GoogleTest / Catch2','Mocks and fakes','Coverage','Fuzzing']},
+ 18:{name:'Technical writing',sum:'Document code and processes so the project stays maintainable by other people.',study:['Doxygen','README and ADRs','Comments that explain the why']},
+ 20:{name:'Secure coding practices',sum:'Know the classic security pitfalls of C++ and apply good practices consistently to avoid them.',study:['Buffer overflows and bounds checking','Integer overflow','CERT C++ and Core Guidelines','Tools: sanitizers and static analysis']},
+ 12:{name:'Web / backend development',sum:'C++ is used in backend services where compute efficiency matters: server logic and large-scale data processing.',study:['Sockets and Boost.Asio','HTTP/REST and gRPC','Serialization (protobuf, JSON)','WebAssembly with Emscripten'],david:'This connects with your stack: WebAssembly via Emscripten is the natural bridge between C++ and the frontend.'},
+ 13:{name:'Distributed systems',sum:'Design software that runs on many machines while guaranteeing consistency and reliability across nodes. Typical of cloud services and data centers.',study:['Consistency and the CAP theorem','Consensus (Raft, Paxos)','Messaging and queues','Fault tolerance']},
+ 14:{name:'Relational databases',sum:'Integrate C++ applications with relational databases using SQL and connectors, caring for performance and data integrity.',study:['SQL and normalization','Connectors (ODBC, libpq, SQLite API)','Transactions and ACID','Prepared statements']},
+ 16:{name:'Computer vision',sum:'Algorithms that process images and video for automated inspection, augmented reality or robotics, where compute speed is critical.',study:['OpenCV','Convolutions and filters','Feature detection','Model inference (ONNX Runtime, TensorRT)']},
+ 17:{name:'Computer graphics',sum:'C++ dominates real-time rendering: video games, simulations and engines. It requires knowing graphics APIs and optimizing the pipeline.',study:['OpenGL and Vulkan','Rendering pipeline and shaders','Linear algebra (GLM)','Engines: Unreal, Godot'],david:'This is your turf: WebGL is basically OpenGL ES, and WebGPU is very close to Vulkan/Metal/D3D12. Learning the basics in C++ gives you the real mental model. Unreal also uses C++.'},
+ 22:{name:'GUI development',sum:'Frameworks like Qt or wxWidgets to build desktop apps with a friendly interface.',study:['Qt (Widgets and QML)','Signals and slots / event loop','Layouts and model-view']}
+};
+const GL_EN={
+ 'Undefined behavior':'Code whose result the standard does not define (out-of-bounds access, signed overflow, using freed memory). The compiler may do anything, even appear to work.',
+ 'const':'Marks a value, reference or method as non-modifiable. Helps prevent bugs and lets the compiler optimize.',
+ 'constexpr':'Lets functions and values be evaluated at compile time.',
+ 'Translation unit':'A source file with all its #include directives expanded. It is what the compiler processes at once; each one produces an object file.',
+ 'Value category':'Classification of expressions (lvalue, rvalue, xvalue...) that decides whether something is copied or moved.',
+ 'auto':'Lets the compiler deduce a variable type from its initializer.',
+ 'Range-based for':'A for (x : collection) loop that walks a container without handling iterators by hand.',
+ 'Lambda':'An anonymous function defined in place, with a capture list: [&](int x){ ... }.',
+ 'nullptr':'Typed literal for a null pointer; replaces NULL and 0 in that role.',
+ 'Structured bindings':'Unpacks pairs, tuples or structs into several variables: auto [a, b] = f();',
+ 'Coroutines':'Functions that can be suspended and resumed (co_await, co_yield). Basis for async code and generators. C++20.',
+ 'Modules':'Alternative to headers that improves compile times and isolation. C++20.',
+ 'C++11':'The standard that modernized the language: auto, lambdas, move semantics, smart pointers, nullptr, threads in the standard library.',
+ 'C++14':'Refinement of C++11: generic lambdas, return type deduction, make_unique.',
+ 'C++17':'Adds optional, variant, string_view, structured bindings, if constexpr and filesystem.',
+ 'C++20':'Adds concepts, ranges, coroutines, modules and the <=> operator.',
+ 'C++23':'Adds std::expected, std::print, mdspan and improvements to ranges and modules.',
+ 'Operator overloading':'Redefining operators (+, ==, <<, []) for your own types.',
+ 'extern "C"':'Requests C linkage: no name mangling. Needed to interoperate with C or other languages.',
+ 'C string':'A char array terminated by \\0. Classic source of buffer bugs.',
+ 'Pointer arithmetic':'Adding to or subtracting from a pointer moves in units of the pointed type, not bytes.',
+ 'Alignment':'Constraint that data sits at an address multiple of some value. Affects performance and compatibility.',
+ 'malloc / free':'C functions to reserve and release dynamic memory on the heap. Every malloc needs its free, or you get a memory leak.',
+ 'calloc / realloc':'calloc reserves zero-initialized memory; realloc resizes an already reserved block (it may move it).',
+ 'void pointer':'Generic pointer (void *) that can point to any type. It must be cast before dereferencing; it is the basis of genericity in C.',
+ 'Function pointer':'Pointer that stores the address of a function, to pass it as an argument or pick it at runtime (e.g. the qsort callback).',
+ 'struct':'Groups variables of different types under one name. It is the base for modeling data in C, which has no classes.',
+ 'union':'Like a struct, but all fields share the same memory: only one is valid at a time. Useful to save memory or reinterpret bytes.',
+ 'Bit field':'A struct field with a width in bits (int flag : 1). Used to pack flags or map hardware registers.',
+ 'Bitwise operators':'Operators that work bit by bit: & | ^ ~ << >>. Essential for masks, flags and low-level programming.',
+ 'sizeof':'Operator that returns the size in bytes of a type or variable, computed at compile time.',
+ 'typedef':'Creates an alias for an existing type. Widely used with structs and function pointers to simplify syntax.',
+ 'Macro':'Text that the preprocessor substitutes before compiling (#define). Powerful but untyped and error-prone.',
+ 'Header guard':'Pattern (#ifndef / #define / #endif or #pragma once) that prevents including a header more than once.',
+ 'static':'In C it has two uses: inside a function, the variable keeps its value between calls; at file level, it limits the symbol to that file.',
+ 'extern':'Declares that a variable or function is defined in another file; it is resolved at link time.',
+ 'volatile':'Tells the compiler a value may change outside the program (hardware, interrupt), so it must not optimize its accesses.',
+ 'errno':'Global (per-thread) variable where C standard library functions leave the code of the last error.',
+ 'FILE* / stdio':'File handle of the C standard library (fopen, fread, fprintf, fclose). They must be closed to avoid leaks.',
+ 'memcpy / memset':'memcpy copies bytes from one memory area to another; memset fills an area with a value. They ignore types and do not check bounds.',
+ 'NULL':'Null pointer constant in C (usually ((void*)0)). Dereferencing it causes a crash.',
+ 'Array decay':'When an array is passed to a function it becomes a pointer to its first element, and its size is lost.',
+ 'restrict':'A promise to the compiler that a pointer is the only access to that data, enabling more optimization. Exists in C99, not in standard C++.',
+ 'Format string':'Format string of printf/scanf (%d, %s). If an attacker controls it or it does not match the arguments, you get bugs and vulnerabilities.',
+ 'Pointer':'A variable that holds a memory address. Can be null and reassigned.',
+ 'Reference':'An alias of another object; must be initialized and cannot be rebound. Safer than a pointer.',
+ 'Stack':'Memory region for local variables and calls. Very fast allocation and automatic release when leaving scope.',
+ 'Heap':'Dynamic memory reserved at runtime (new/malloc). More flexible but slower and prone to leaks.',
+ 'Memory leak':'Reserved memory that is never freed, with the reference to it lost.',
+ 'Dangling pointer':'A pointer to memory that was already freed or to an object that no longer exists.',
+ 'Use-after-free':'Using memory after it was freed. A classic memory bug and vulnerability.',
+ 'RAII':'Resource Acquisition Is Initialization: a resource (memory, file, lock) is acquired in the constructor and released in the destructor. The central idiom of C++.',
+ 'unique_ptr':'Smart pointer with exclusive ownership: one owner, frees itself, cannot be copied (only moved).',
+ 'shared_ptr':'Smart pointer with shared ownership via reference counting. Beware of cycles (use weak_ptr).',
+ 'Move semantics':'Transfer resources from one object to another instead of copying (std::move, move constructor). Avoids costly copies.',
+ 'Rule of Three/Five/Zero':'If you hand-write a destructor, copy or move, you probably need to write the others (Three/Five). Ideally write none (Zero) and rely on RAII.',
+ 'Object slicing':'Copying a derived object into a base object by value loses the derived part.',
+ 'Cache locality':'Accessing contiguous data uses the CPU cache and can be tens of times faster than jumping through pointers.',
+ 'Segmentation fault':'Crash caused by invalid memory access (null pointer, out of range, freed memory).',
+ 'Buffer overflow':'Writing past the end of a buffer. Causes corruption or arbitrary code execution.',
+ 'Integer overflow':'Result of an integer operation that does not fit in the type. With signed integers it is undefined behavior.',
+ 'Class':'User-defined type that groups data and functions. The only difference from struct is that members are private by default.',
+ 'Encapsulation':'Hiding internal state and exposing only a controlled interface (public/private/protected).',
+ 'Inheritance':'A class derives from another and reuses or extends its behavior.',
+ 'Polymorphism':'Using objects of different types through a common interface. In C++ it can be dynamic (virtual) or static (templates).',
+ 'Virtual function':'A method resolved at runtime based on the real type of the object.',
+ 'Vtable':'Table of pointers to virtual functions that the compiler attaches to each polymorphic class.',
+ 'Pure virtual':'A virtual method with no implementation (= 0). Makes the class abstract.',
+ 'Virtual destructor':'Needed in polymorphic base classes so deleting through a base pointer correctly destroys the derived object.',
+ 'override / final':'override checks that you really override a virtual; final forbids further overriding or inheriting.',
+ 'STL':'Standard Template Library: containers, iterators and generic algorithms of the standard library.',
+ 'Container':'Structure that holds elements: vector, list, map, set, deque, array.',
+ 'Iterator':'Object that points to an element and lets you walk a container; connects containers with algorithms.',
+ 'Algorithm (STL)':'Generic functions like sort, find, transform, accumulate that work over iterator ranges.',
+ 'std::vector':'Dynamic array stored contiguously in memory. The default container in almost every case.',
+ 'std::map / unordered_map':'map is an ordered tree (O(log n)); unordered_map is a hash table (O(1) average).',
+ 'std::optional / std::variant':'optional represents a value that may be absent; variant, one of several possible types (a safe union).',
+ 'Template':'Code parameterized by types or values and generated at compile time. Basis of generic programming.',
+ 'Generic programming':'Writing algorithms independent of the concrete data type.',
+ 'Concepts':'Named constraints on template parameters, giving more readable compile errors. C++20.',
+ 'Ranges':'C++20 library to compose algorithms over sequences with pipes (|) and lazy views.',
+ 'Zero-cost abstraction':'C++ principle: what you do not use costs nothing, and what you use could not be hand-written any faster.',
+ 'Thread':'An independent thread of execution inside a process (std::thread).',
+ 'Mutex':'Mutual exclusion: only one thread at a time can enter a critical section.',
+ 'lock_guard / unique_lock':'RAII wrappers that acquire and release a mutex automatically.',
+ 'Race condition':'The result depends on the execution order between threads, which is not controlled.',
+ 'Data race':'Two threads access the same memory without synchronization and at least one writes. It is undefined behavior in C++.',
+ 'Deadlock':'Threads waiting on each other forever.',
+ 'Atomic':'Types whose operations are performed indivisibly (std::atomic).',
+ 'Condition variable':'Lets a thread sleep until another notifies it that something changed.',
+ 'Future / Promise / async':'Mechanism to get a result computed in another thread (std::async, std::future).',
+ 'Memory model':'Rules that define which writes other threads see and in what order (memory_order).',
+ 'Thread pool':'A set of reusable threads that execute tasks from a queue.',
+ 'Lock-free':'Concurrent structures that avoid locks using atomic operations. Hard to get right.',
+ 'SIMD':'One instruction processes several data items at once (SSE, AVX, NEON).',
+ 'Data-oriented design':'Organizing data according to how it is processed (arrays of structs vs structs of arrays) to exploit the cache.',
+ 'Hot path':'Code that runs very frequently and where optimizing pays off.',
+ 'Inlining':'The compiler replaces a function call with its body, avoiding call overhead and enabling more optimizations.',
+ 'Benchmark':'Repeatable measurement of the run time of a piece of code (e.g. Google Benchmark).',
+ 'Profiler':'Tool that measures where a program spends time or memory (perf, VTune, Instruments, Tracy).',
+ 'RTOS':'Real-time operating system with deterministic scheduling (FreeRTOS, Zephyr).',
+ 'Deadline':'Maximum time allowed to complete a task.',
+ 'Jitter':'Variation in response time between runs.',
+ 'Latency':'Time between an event or request and its response.',
+ 'Determinism':'Property that timing and result are predictable.',
+ 'WCET':'Worst-Case Execution Time: the maximum possible time of a task.',
+ 'Embedded':'Software that runs inside a device with limited resources (microcontrollers).',
+ 'Compiler':'Translates C++ code into object code. The main ones are GCC, Clang and MSVC.',
+ 'Preprocessor':'Earlier stage that resolves #include, #define and #if before compiling.',
+ 'Linker':'Joins object files and libraries into an executable or library, resolving symbols.',
+ 'Header / Source':'.h/.hpp files declare the interface; .cpp files hold the implementation.',
+ 'ODR':'One Definition Rule: each entity may be defined only once in the program. Violating it causes link errors or UB.',
+ 'Static vs dynamic linking':'Static copies code into the executable (.a/.lib); dynamic loads it at runtime (.so/.dll).',
+ 'Name mangling':'The compiler encodes a function name and its parameters into the symbol, to support overloading.',
+ 'ABI':'Application Binary Interface: binary contract (layout, calling convention) between separately compiled code.',
+ 'Build flags':'Compiler options: -O2/-O3 (optimization), -Wall -Wextra (warnings), -g (debug), -std=c++20.',
+ 'Makefile / Ninja':'Tools that run the build according to a dependency graph.',
+ 'CMake':'Cross-platform build system generator; the de facto standard in C++ projects.',
+ 'Conan / vcpkg':'Package managers for C++ dependencies.',
+ 'GCC / Clang / MSVC':'The three main compilers: GNU, LLVM and Microsoft.',
+ 'Cross-compilation':'Compiling on one platform to run on another (e.g. ARM from x86).',
+ 'Endianness':'Order of a number\'s bytes in memory (little-endian or big-endian).',
+ 'Debugger':'Lets you pause execution, inspect variables and step through code.',
+ 'GDB / LLDB':'Command-line debuggers for GCC and LLVM respectively.',
+ 'Sanitizers':'Compiler instrumentation that detects runtime errors: ASan (memory), UBSan (UB), TSan (data races), MSan (uninitialized memory).',
+ 'Valgrind':'Tool that detects leaks and invalid accesses by running the program in a virtual machine (slow).',
+ 'Core dump':'Dump of a process memory on crash, to analyze with a debugger.',
+ 'Static analysis':'Bug detection without running the code (clang-tidy, cppcheck, SonarQube).',
+ 'Unit test':'Automated test of a small unit of code.',
+ 'GoogleTest / Catch2':'The most used testing frameworks in C++.',
+ 'Mock':'A fake object that replaces a dependency to isolate what is being tested (GoogleMock).',
+ 'Code coverage':'Percentage of lines or branches executed by the tests (gcov, llvm-cov).',
+ 'Fuzzing':'Testing with random or mutated inputs to find crashes (libFuzzer, AFL).',
+ 'CI / CD':'Continuous integration / continuous delivery: automating build, tests and deployment on every change.',
+ 'Pipeline':'Automatic sequence of CI stages (build, test, analysis, release).',
+ 'ccache':'Compilation cache that avoids recompiling unchanged files.',
+ 'Git':'Distributed version control system.',
+ 'Branch / Merge / Rebase':'Branches for parallel work, and two ways to integrate them: merge preserves history, rebase rewrites it linearly.',
+ 'Code review':'Review of code by other people before integrating it.',
+ 'Pull request':'Proposal of changes for review and integration into a branch.',
+ 'Doxygen':'Documentation generator based on comments in the code.',
+ 'ADR':'Architecture Decision Record: a short document that records a technical decision and its reason.',
+ 'CERT C++ / Core Guidelines':'Secure coding guidelines (CERT) and good-practice guidelines (C++ Core Guidelines by Stroustrup and Sutter).',
+ 'MISRA':'Coding standard for safety-critical systems (automotive, aerospace).',
+ 'Sockets':'API for TCP/UDP network communication between processes.',
+ 'Boost.Asio':'Library for asynchronous I/O and networking; basis of the proposed standard networking.',
+ 'REST':'API style over HTTP built on resources and verbs.',
+ 'RPC':'Remote Procedure Call: calling a function that runs on another machine or process as if it were a local call. gRPC is a modern implementation.',
+ 'gRPC':'High-performance RPC framework over HTTP/2 with Protobuf.',
+ 'Protobuf':'Compact binary serialization format with a schema, from Google.',
+ 'Serialization':'Converting objects into bytes or text to store or send them.',
+ 'WebAssembly':'Binary format that runs in the browser at near-native speed; a compilation target for C++.',
+ 'Emscripten':'Toolchain that compiles C/C++ to WebAssembly and generates the JavaScript glue.',
+ 'Distributed system':'A system made of several machines that coordinate to act as one.',
+ 'CAP theorem':'During a network partition you can guarantee only consistency or availability, not both.',
+ 'Consensus':'Protocols (Raft, Paxos) for nodes to agree on a value even with failures.',
+ 'Message queue':'Intermediate queue that decouples producers and consumers (Kafka, RabbitMQ).',
+ 'Fault tolerance':'Ability to keep working when some component fails.',
+ 'RDBMS':'Relational database management system (PostgreSQL, MySQL, SQL Server).',
+ 'SQL':'Query language for relational databases.',
+ 'SQLite':'Relational database embedded in a single file, with a C API.',
+ 'ODBC':'Standard interface to connect to different databases.',
+ 'ACID':'Atomicity, Consistency, Isolation, Durability: the guarantees of a transaction.',
+ 'Prepared statement':'Precompiled SQL query with parameters; improves performance and prevents SQL injection.',
+ 'Computer vision':'Processing of images and video to extract information.',
+ 'OpenCV':'Computer vision library written in C++.',
+ 'ONNX Runtime':'Engine to run ML models exported to ONNX, with a C++ API.',
+ 'Convolution':'Operation that applies a kernel over an image (blur, edges, CNNs).',
+ 'OpenGL':'Classic cross-platform graphics API. WebGL is its browser variant.',
+ 'Vulkan':'Modern low-level graphics API with explicit control of the GPU.',
+ 'DirectX':'Microsoft family of graphics APIs (Direct3D 11/12).',
+ 'Shader':'Program that runs on the GPU (vertex, fragment, compute).',
+ 'GPU':'Massively parallel processor for graphics and compute.',
+ 'Rendering pipeline':'Stages that turn geometry into pixels: vertices, rasterization, fragments.',
+ 'GLM':'C++ math library (vectors, matrices) that mimics GLSL syntax.',
+ 'GUI':'Graphical User Interface: a graphical interface with windows, buttons and menus, as opposed to the command line (CLI). In C++ it is built with frameworks like Qt or wxWidgets.',
+ 'Qt':'Cross-platform GUI and utility framework (Widgets and QML).',
+ 'wxWidgets':'Cross-platform GUI framework that uses native widgets.',
+ 'Event loop':'Loop that waits for and dispatches events (clicks, timers, network).',
+ 'Signals and slots':'Qt mechanism to connect events to handlers without tight coupling.'
+};
+/* EN-END */
+
+/* ---------- UI strings ---------- */
+const T={
+ es:{
+  h1:'C++: mapa mental de skills técnicos y glosario',
+  sub:'Basado en la guía de contratación de BairesDev (23 skills técnicos). Los textos son resúmenes propios. Haz click en cualquier skill para ver el detalle.',
+  tabMap:'Mapa mental',tabGl:'Glosario',
+  tabQuiz:'Quiz',
+  qTitle:'Quiz: elige el concepto correcto',qSub:'Te muestro una definición y tú eliges a qué concepto corresponde.',
+  qPool:'Términos',qPoolPending:'Pendientes',qPoolPrio:'Solo prioritarios',qPoolAll:'Todos',qCat:'Categoría',qLen:'Preguntas',
+  qAvail:'términos disponibles',qStart:'Empezar',qNoPool:'No hay términos con esa selección. Cambia el filtro.',qWeight:'Los prioritarios salen con más frecuencia.',
+  qQ:'Pregunta',qHits:'Aciertos',qStreak:'Racha',qWhich:'¿Qué concepto es?',
+  qRight:'¡Correcto!',qWrongIs:'Era',qNext:'Siguiente',qFinish:'Ver resultado',
+  qDone:'Resultado',qAgain:'Jugar otra vez',qSettings:'Cambiar ajustes',qPrioMissed:'Priorizar los fallados',qMissed:'Para repasar',qPerfect:'¡Perfecto! Ni un fallo.',
+  qKeys:'Atajos: 1-4 para responder, Enter para continuar.',
+  qMsgHi:'Muy bien, ya dominas esto.',qMsgMid:'Vas bien, repasa los que fallaste.',qMsgLo:'Toca repasar: marca los fallados como prioritarios.',
+
+  detail:'Detalle',hint:'Selecciona un skill del mapa. Si tocas una categoría, resalta sus ramas. Los términos de abajo te llevan al glosario.',
+  study:'Qué estudiar',terms:'Términos del glosario',forYou:'Para ti:',
+  centerSub:'23 skills técnicos',search:'Buscar término o definición (ej: RAII, mutex, linker)',
+  st:'Estado',cat:'Categoría',all:'Todos',allF:'Todas',
+  stPending:'Pendientes',stPrio:'Prioritarios',stDone:'Archivados',stAll:'Todos',
+  of:'de',terms_n:'términos',prio:'prioritarios',done:'archivados',
+  btnPrio:'Priorizar',btnPrioOn:'Prioritario',btnDone:'Ya lo sé',btnDoneOn:'Restaurar',
+  tPrio:'Marcar como prioritario',tPrioOn:'Quitar prioridad',tDone:'Ya lo conozco: archivar',tDoneOn:'Sacar del archivo',
+  empty:'No hay términos con estos filtros.',
+  note:'Tus marcas (archivados y prioritarios) se guardan en este navegador. Los prioritarios aparecen primero.'
+ },
+ en:{
+  h1:'C++: technical skills mind map and glossary',
+  sub:'Based on the BairesDev hiring guide (23 technical skills). Texts are original summaries. Click any skill to see the details.',
+  tabMap:'Mind map',tabGl:'Glossary',
+  tabQuiz:'Quiz',
+  qTitle:'Quiz: pick the right concept',qSub:'I show you a definition and you choose the concept it belongs to.',
+  qPool:'Terms',qPoolPending:'Pending',qPoolPrio:'Priority only',qPoolAll:'All',qCat:'Category',qLen:'Questions',
+  qAvail:'terms available',qStart:'Start',qNoPool:'No terms match this selection. Change the filter.',qWeight:'Priority terms show up more often.',
+  qQ:'Question',qHits:'Correct',qStreak:'Streak',qWhich:'Which concept is it?',
+  qRight:'Correct!',qWrongIs:'It was',qNext:'Next',qFinish:'See result',
+  qDone:'Result',qAgain:'Play again',qSettings:'Change settings',qPrioMissed:'Prioritize the missed ones',qMissed:'To review',qPerfect:'Perfect! Not a single miss.',
+  qKeys:'Shortcuts: 1-4 to answer, Enter to continue.',
+  qMsgHi:'Great, you know this well.',qMsgMid:'Going well, review the ones you missed.',qMsgLo:'Time to review: mark the missed ones as priority.',
+
+  detail:'Details',hint:'Select a skill on the map. Clicking a category highlights its branches. The terms below take you to the glossary.',
+  study:'What to study',terms:'Glossary terms',forYou:'For you:',
+  centerSub:'23 technical skills',search:'Search term or definition (e.g. RAII, mutex, linker)',
+  st:'Status',cat:'Category',all:'All',allF:'All',
+  stPending:'Pending',stPrio:'Priority',stDone:'Archived',stAll:'All',
+  of:'of',terms_n:'terms',prio:'priority',done:'archived',
+  btnPrio:'Prioritize',btnPrioOn:'Priority',btnDone:'I know it',btnDoneOn:'Restore',
+  tPrio:'Mark as priority',tPrioOn:'Remove priority',tDone:'I already know it: archive',tDoneOn:'Take out of the archive',
+  empty:'No terms match these filters.',
+  note:'Your marks (archived and priority) are saved in this browser. Priority terms are shown first.'
+ }
+};
+
+/* ---------- State ---------- */
+const KEY='cppmap.v1';
+const ST={lang:'es',done:[],prio:[]};
+try{
+  const r=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(r){ST.lang=r.lang==='en'?'en':'es';ST.done=Array.isArray(r.done)?r.done:[];ST.prio=Array.isArray(r.prio)?r.prio:[]}
+}catch(e){}
+const doneSet=new Set(ST.done),prioSet=new Set(ST.prio);
+function persist(){
+  ST.done=[...doneSet];ST.prio=[...prioSet];
+  try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}
+}
+const L=()=>T[ST.lang];
+
+/* ---------- Helpers ---------- */
+const $=s=>document.querySelector(s);
+const catById=Object.fromEntries(CATS.map(c=>[c.id,c]));
+const gIndex=Object.fromEntries(GLOSS.map(g=>[g.t,g]));
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const skillOf=s=>ST.lang==='en'?Object.assign({},s,SKILLS_EN[s.n]):s;
+const catName=id=>CAT_LINES[ST.lang][id].join(' ');
+const defOf=g=>ST.lang==='en'?(GL_EN[g.t]||g.d):g.d;
+const gcName=c=>GCAT[c][ST.lang];
+const gcColor=c=>(GCAT[c]||{color:'#8b9bab'}).color;
+
+/* ---------- Mind map ---------- */
+const NS='http://www.w3.org/2000/svg';
+const svg=$('#svg');
+const W=1300,H=1000,CX=W/2,CY=H/2;
+const R1=175,R2=395;
+let selN=null;
+function el(n,a,p){const e=document.createElementNS(NS,n);for(const k in (a||{}))e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
+
+function buildMap(){
+  svg.innerHTML='';svg.dataset.hl='';
+  svg.setAttribute('aria-label',L().h1);
+  const total=SKILLS.length,step=360/total;
+  let angle=-90;
+  const gLinks=el('g'),gNodes=el('g');
+  CATS.forEach(cat=>{
+    const items=SKILLS.filter(s=>s.c===cat.id);
+    const start=angle;
+    const pts=items.map((s,i)=>({s:skillOf(s),a:(start+step*(i+.5))*Math.PI/180}));
+    angle+=step*items.length;
+    const mid=(start+step*items.length/2)*Math.PI/180;
+    const cx=CX+Math.cos(mid)*R1,cy=CY+Math.sin(mid)*R1;
+    el('path',{d:`M${CX},${CY} L${cx},${cy}`,class:'link','data-c':cat.id,stroke:cat.color,'stroke-width':3,opacity:.7},gLinks);
+    pts.forEach(({s,a})=>{
+      const x=CX+Math.cos(a)*R2,y=CY+Math.sin(a)*R2;
+      const mx=CX+Math.cos(a)*(R1+110),my=CY+Math.sin(a)*(R1+110);
+      el('path',{d:`M${cx},${cy} Q${mx},${my} ${x},${y}`,class:'link','data-c':cat.id,stroke:cat.color,'stroke-opacity':.5},gLinks);
+      const g=el('g',{class:'leaf'+(s.n===selN?' sel':''),'data-n':s.n,'data-c':cat.id,tabindex:0,role:'button','aria-label':s.name},gNodes);
+      el('circle',{cx:x,cy:y,r:8,fill:cat.color,stroke:'#0f1419'},g);
+      const cosA=Math.cos(a),side=Math.abs(cosA)<.25;
+      const anchor=side?'middle':(cosA>0?'start':'end');
+      const dx=side?0:(cosA>0?16:-16);
+      const dy=side?(Math.sin(a)>0?26:-16):4;
+      const t=el('text',{x:x+dx,y:y+dy,'text-anchor':anchor},g);
+      wrapLabel(t,`${s.n}. ${s.name}`,x+dx);
+      g.addEventListener('click',()=>selectSkill(s.n));
+      g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectSkill(s.n)}});
+    });
+    const cg=el('g',{class:'cat','data-c':cat.id},gNodes);
+    el('circle',{cx,cy,r:54,fill:cat.color},cg);
+    const t=el('text',{x:cx,y:cy-4},cg);
+    CAT_LINES[ST.lang][cat.id].forEach((l,i)=>{
+      const s=document.createElementNS(NS,'tspan');s.setAttribute('x',cx);s.setAttribute('dy',i?'15':'0');s.textContent=l;t.appendChild(s);
+    });
+    cg.addEventListener('click',()=>highlightCat(cat.id));
+  });
+  const c=el('g',{class:'center'},gNodes);
+  el('circle',{cx:CX,cy:CY,r:70},c);
+  el('text',{x:CX,y:CY+2},c).textContent='C++';
+  el('text',{x:CX,y:CY+22,class:'sub'},c).textContent=L().centerSub;
+  $('#legend').innerHTML=CATS.map(c=>`<span style="--k:${c.color}">${esc(catName(c.id))}</span>`).join('');
+}
+function wrapLabel(t,text,x){
+  const words=text.split(' ');let l1='',l2='';
+  words.forEach(w=>{if((l1+' '+w).trim().length<=24&&!l2)l1=(l1+' '+w).trim();else l2=(l2+' '+w).trim()});
+  const a=document.createElementNS(NS,'tspan');a.setAttribute('x',x);a.textContent=l1;t.appendChild(a);
+  if(l2){const b=document.createElementNS(NS,'tspan');b.setAttribute('x',x);b.setAttribute('dy','15');b.textContent=l2;t.appendChild(b)}
+}
+function highlightCat(id){
+  const on=svg.dataset.hl===id;
+  svg.dataset.hl=on?'':id;
+  svg.querySelectorAll('[data-c]').forEach(n=>n.classList.toggle('dim',!on&&n.dataset.c!==id));
+}
+function renderSide(){
+  if(selN==null){
+    $('#side').innerHTML=`<h2>${esc(L().detail)}</h2><p class="hint">${esc(L().hint)}</p>`;return;
+  }
+  const s=skillOf(SKILLS.find(x=>x.n===selN)),cat=catById[s.c];
+  svg.querySelectorAll('.leaf').forEach(l=>l.classList.toggle('sel',+l.dataset.n===selN));
+  const chips=(s.terms||[]).filter(t=>gIndex[t]).map(t=>{
+    const g=gIndex[t];
+    const cls=doneSet.has(t)?' done':'';
+    const mark=prioSet.has(t)?'★ ':(doneSet.has(t)?'✓ ':'');
+    return `<button class="chip${cls}" style="--k:${gcColor(g.c)}" data-t="${esc(t)}">${mark}${esc(t)}</button>`;
+  }).join('');
+  $('#side').innerHTML=`
+    <span class="badge" style="background:${cat.color}">${esc(catName(s.c))}</span>
+    <h2>${s.n}. ${esc(s.name)}</h2>
+    <p>${esc(s.sum)}</p>
+    <h4>${esc(L().study)}</h4>
+    <ul>${s.study.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+    <h4>${esc(L().terms)}</h4>
+    <div class="chips">${chips}</div>
+    ${s.david?`<div class="david"><b>${esc(L().forYou)}</b> ${esc(s.david)}</div>`:''}`;
+  $('#side').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>gotoTerm(c.dataset.t)));
+}
+function selectSkill(n){selN=n;renderSide()}
+
+/* ---------- Glossary ---------- */
+const GCATS=[...new Set(GLOSS.map(g=>g.c))];
+let gCat='all',gStatus='pending';
+function renderFilters(){
+  const stOpts=[['pending',L().stPending],['prio','★ '+L().stPrio],['done','✓ '+L().stDone],['all',L().stAll]];
+  $('#status').innerHTML=`<span class="lbl">${esc(L().st)}</span>`+stOpts.map(([k,n])=>`<button class="${k===gStatus?'on':''}" data-k="${k}">${esc(n)}</button>`).join('');
+  $('#status').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{gStatus=b.dataset.k;renderFilters();renderGloss()}));
+  $('#filters').innerHTML=`<span class="lbl">${esc(L().cat)}</span><button class="${gCat==='all'?'on':''}" data-k="all">${esc(L().allF)}</button>`+
+    GCATS.map(c=>`<button class="cat-btn ${gCat===c?'on':''}" style="--k:${gcColor(c)}" data-k="${esc(c)}">${esc(gcName(c))}</button>`).join('');
+  $('#filters').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{gCat=b.dataset.k;renderFilters();renderGloss()}));
+}
+function renderGloss(flash){
+  const q=$('#q').value.trim().toLowerCase();
+  const list=GLOSS.filter(g=>{
+    if(gStatus==='pending'&&doneSet.has(g.t))return false;
+    if(gStatus==='prio'&&!prioSet.has(g.t))return false;
+    if(gStatus==='done'&&!doneSet.has(g.t))return false;
+    if(gCat!=='all'&&g.c!==gCat)return false;
+    if(q&&!(g.t.toLowerCase().includes(q)||defOf(g).toLowerCase().includes(q)))return false;
+    return true;
+  }).sort((a,b)=>(prioSet.has(b.t)-prioSet.has(a.t))||a.t.localeCompare(b.t,'en',{sensitivity:'base'}));
+  const n=GLOSS.length,d=doneSet.size,p=prioSet.size;
+  $('#count').textContent=`${list.length} ${L().of} ${n} ${L().terms_n} · ★ ${p} ${L().prio} · ✓ ${d} ${L().done}`;
+  $('#prog').style.width=(d/n*100)+'%';
+  $('#pct').textContent=Math.round(d/n*100)+'%';
+  $('#gl').innerHTML=list.length?list.map(g=>{
+    const isP=prioSet.has(g.t),isD=doneSet.has(g.t);
+    return `<div class="term${isP?' isprio':''}${isD?' isdone':''}${flash===g.t?' flash':''}" style="--k:${gcColor(g.c)}" data-t="${esc(g.t)}">
+      <div class="top"><div><small>${esc(gcName(g.c))}</small><b>${esc(g.t)}</b></div>
+        <div class="acts">
+          <button class="star${isP?' on':''}" data-act="prio" data-t="${esc(g.t)}" title="${esc(isP?L().tPrioOn:L().tPrio)}" aria-pressed="${isP}">★ ${esc(isP?L().btnPrioOn:L().btnPrio)}</button>
+          <button class="ok${isD?' on':''}" data-act="done" data-t="${esc(g.t)}" title="${esc(isD?L().tDoneOn:L().tDone)}" aria-pressed="${isD}">✓ ${esc(isD?L().btnDoneOn:L().btnDone)}</button>
+        </div></div>
+      <p>${esc(defOf(g))}</p></div>`;
+  }).join(''):`<div class="empty">${esc(L().empty)}</div>`;
+  if(flash){const e=$('#gl .flash');if(e)e.scrollIntoView({block:'center'})}
+}
+$('#gl').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]');if(!b)return;
+  const t=b.dataset.t;
+  if(b.dataset.act==='prio'){
+    if(prioSet.has(t))prioSet.delete(t);else{prioSet.add(t);doneSet.delete(t)}
+  }else{
+    if(doneSet.has(t))doneSet.delete(t);else{doneSet.add(t);prioSet.delete(t)}
+  }
+  persist();renderGloss();renderSide();
+});
+function gotoTerm(t){
+  show('gl');gStatus='all';gCat='all';$('#q').value='';renderFilters();renderGloss(t);
+}
+$('#q').addEventListener('input',()=>renderGloss());
+
+
+/* ---------- Quiz ---------- */
+const Q={pool:'pending',cat:'all',len:10,s:null,last:null};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function maskDef(g){
+  let d=defOf(g);
+  [g.t,...g.t.split(' / ').filter(p=>p.length>=3)].forEach(p=>{
+    const re=new RegExp('(?<![A-Za-z0-9_+])'+p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![A-Za-z0-9_])','gi');
+    d=d.replace(re,'____');
+  });
+  return d;
+}
+function qPoolList(){
+  return GLOSS.filter(g=>{
+    if(Q.pool==='pending'&&doneSet.has(g.t))return false;
+    if(Q.pool==='prio'&&!prioSet.has(g.t))return false;
+    if(Q.cat!=='all'&&g.c!==Q.cat)return false;
+    return true;
+  });
+}
+function startQuiz(){
+  const pool=qPoolList();if(!pool.length)return;
+  const weighted=[];pool.forEach(g=>{const w=prioSet.has(g.t)?3:1;for(let i=0;i<w;i++)weighted.push(g)});
+  const picked=[];const seen=new Set();
+  shuffle(weighted).forEach(g=>{if(!seen.has(g.t)&&picked.length<Math.min(Q.len,pool.length)){seen.add(g.t);picked.push(g)}});
+  const qs=picked.map(g=>{
+    const same=shuffle(GLOSS.filter(x=>x.c===g.c&&x.t!==g.t));
+    const other=shuffle(GLOSS.filter(x=>x.c!==g.c));
+    const ds=[...same,...other].slice(0,3);
+    return {g,opts:shuffle([g,...ds])};
+  });
+  Q.s={qs,i:0,score:0,streak:0,best:0,ans:null,missed:[]};
+  renderQuiz();
+}
+function renderQuiz(){
+  const box=$('#quiz'),l=L(),s=Q.s;
+  if(!s){
+    const n=qPoolList().length;
+    const pools=[['pending',l.qPoolPending],['prio','★ '+l.qPoolPrio],['all',l.qPoolAll]];
+    box.innerHTML=`<div class="qcard">
+      <h2 style="margin:0 0 4px;font-size:20px">${esc(l.qTitle)}</h2>
+      <p class="hint" style="margin:0 0 16px">${esc(l.qSub)}</p>
+      <div class="row"><span class="lbl">${esc(l.qPool)}</span>${pools.map(([k,nm])=>`<button class="${Q.pool===k?'on':''}" data-qpool="${k}">${esc(nm)}</button>`).join('')}</div>
+      <div class="row"><span class="lbl">${esc(l.qCat)}</span><button class="${Q.cat==='all'?'on':''}" data-qcat="all">${esc(l.allF)}</button>${GCATS.map(c=>`<button class="cat-btn ${Q.cat===c?'on':''}" style="--k:${gcColor(c)}" data-qcat="${esc(c)}">${esc(gcName(c))}</button>`).join('')}</div>
+      <div class="row"><span class="lbl">${esc(l.qLen)}</span>${[5,10,20].map(k=>`<button class="${Q.len===k?'on':''}" data-qlen="${k}">${k}</button>`).join('')}</div>
+      <p class="hint" style="margin:10px 0 14px">${n} ${esc(l.qAvail)}. ${esc(l.qWeight)}</p>
+      ${n?'':`<p class="hint">${esc(l.qNoPool)}</p>`}
+      <button class="btn primary" data-qact="start" ${n?'':'disabled'}>${esc(l.qStart)}</button>
+    </div>`;
+    return;
+  }
+  if(s.i>=s.qs.length){
+    const N=s.qs.length,pct=Math.round(s.score/N*100);
+    const msg=pct>=80?l.qMsgHi:(pct>=50?l.qMsgMid:l.qMsgLo);
+    box.innerHTML=`<div class="qcard">
+      <div class="qhead"><b>${esc(l.qDone)}</b><span>${esc(l.qStreak)}: <b>${s.best}</b></span></div>
+      <div class="qscore">${s.score} / ${N} <span style="font-size:20px;color:var(--mut)">(${pct}%)</span></div>
+      <p>${esc(s.missed.length?msg:l.qPerfect)}</p>
+      ${s.missed.length?`<h4 style="margin:16px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)">${esc(l.qMissed)}</h4>
+      <ul class="qmiss">${s.missed.map(g=>`<li style="--k:${gcColor(g.c)}"><b>${esc(g.t)}</b>: ${esc(defOf(g))}</li>`).join('')}</ul>`:''}
+      <div class="qbtns">
+        <button class="btn primary" data-qact="again">${esc(l.qAgain)}</button>
+        ${s.missed.length?`<button class="btn" data-qact="prioMissed">★ ${esc(l.qPrioMissed)}</button>`:''}
+        <button class="btn" data-qact="settings">${esc(l.qSettings)}</button>
+      </div></div>`;
+    return;
+  }
+  const q=s.qs[s.i],g=q.g,N=s.qs.length,ans=s.ans;
+  const isP=prioSet.has(g.t),isD=doneSet.has(g.t);
+  box.innerHTML=`<div class="qcard">
+    <div class="qhead"><span>${esc(l.qQ)} <b>${s.i+1}/${N}</b></span><span>${esc(l.qHits)}: <b>${s.score}</b></span><span>${esc(l.qStreak)}: <b>${s.streak}</b> ${s.streak>=3?'🔥':''}</span><span style="margin-left:auto"><button class="btn" data-qact="settings" style="padding:3px 10px;font-size:12px">${esc(l.qSettings)}</button></span></div>
+    <div class="qprog"><i style="width:${(s.i+(ans?1:0))/N*100}%"></i></div>
+    <span class="qcat" style="--k:${gcColor(g.c)}">${esc(gcName(g.c))}</span>
+    <p class="qdef">${esc(maskDef(g))}</p>
+    <div class="qopts">${q.opts.map((o,k)=>{
+      let cls='';
+      if(ans){if(o.t===g.t)cls='right';else if(o.t===ans)cls='wrong';else cls='faded'}
+      return `<button class="qopt ${cls}" style="--k:${gcColor(o.c)}" data-qopt="${esc(o.t)}" ${ans?'disabled':''}><span class="n">${k+1}</span>${esc(o.t)}</button>`;
+    }).join('')}</div>
+    ${ans?`<div class="qfb ${ans===g.t?'ok':'bad'}">${ans===g.t?'✓ '+esc(l.qRight):'✗ '+esc(l.qWrongIs)+': <b>'+esc(g.t)+'</b>'}</div>
+    <div class="qbtns">
+      <button class="btn primary" data-qact="next">${esc(s.i+1>=N?l.qFinish:l.qNext)}</button>
+      <button class="btn ${isP?'on':''}" data-qact="prio">★ ${esc(isP?l.btnPrioOn:l.btnPrio)}</button>
+      <button class="btn ${isD?'on':''}" data-qact="done">✓ ${esc(isD?l.btnDoneOn:l.btnDone)}</button>
+    </div>`:''}
+    <p class="qkeys">${esc(l.qKeys)}</p></div>`;
+}
+function qToggle(kind,t){
+  if(kind==='prio'){if(prioSet.has(t))prioSet.delete(t);else{prioSet.add(t);doneSet.delete(t)}}
+  else{if(doneSet.has(t))doneSet.delete(t);else{doneSet.add(t);prioSet.delete(t)}}
+  persist();renderGloss();renderSide();
+}
+function qAnswer(t){
+  const s=Q.s;if(!s||s.ans||s.i>=s.qs.length)return;
+  const g=s.qs[s.i].g;s.ans=t;
+  if(t===g.t){s.score++;s.streak++;s.best=Math.max(s.best,s.streak)}else{s.streak=0;s.missed.push(g)}
+  renderQuiz();
+}
+function qNext(){const s=Q.s;if(!s||!s.ans)return;s.i++;s.ans=null;renderQuiz()}
+$('#quiz').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const d=b.dataset;
+  if(d.qpool){Q.pool=d.qpool;renderQuiz()}
+  else if(d.qcat){Q.cat=d.qcat;renderQuiz()}
+  else if(d.qlen){Q.len=+d.qlen;renderQuiz()}
+  else if(d.qopt!==undefined)qAnswer(d.qopt);
+  else if(d.qact==='start'||d.qact==='again')startQuiz();
+  else if(d.qact==='settings'){Q.s=null;renderQuiz()}
+  else if(d.qact==='next')qNext();
+  else if(d.qact==='prio'||d.qact==='done'){qToggle(d.qact,Q.s.qs[Q.s.i].g.t);renderQuiz()}
+  else if(d.qact==='prioMissed'){Q.s.missed.forEach(g=>{prioSet.add(g.t);doneSet.delete(g.t)});persist();renderGloss();renderSide();b.disabled=true;b.textContent='★ ✓'}
+});
+document.addEventListener('keydown',e=>{
+  if(!$('#v-quiz').classList.contains('on')||!Q.s)return;
+  if(e.target.tagName==='INPUT')return;
+  const s=Q.s;
+  if(s.i<s.qs.length&&!s.ans&&/^[1-4]$/.test(e.key)){const o=s.qs[s.i].opts[+e.key-1];if(o){e.preventDefault();qAnswer(o.t)}}
+  else if((e.key==='Enter'||e.key===' ')&&s.ans&&s.i<s.qs.length){e.preventDefault();qNext()}
+});
+
+/* ---------- Tabs and language ---------- */
+function show(v){
+  ['map','gl','quiz'].forEach(k=>{
+    $('#v-'+k).classList.toggle('on',v===k);$('#b-'+k).classList.toggle('on',v===k);
+  });
+  if(v==='quiz')renderQuiz();
+}
+$('#b-map').addEventListener('click',()=>show('map'));
+$('#b-gl').addEventListener('click',()=>show('gl'));
+$('#b-quiz').addEventListener('click',()=>show('quiz'));
+
+function applyLang(){
+  document.documentElement.lang=ST.lang;
+  $('#t-h1').textContent=L().h1;$('#t-sub').textContent=L().sub;
+  $('#b-map').textContent=L().tabMap;$('#b-gl').textContent=L().tabGl;$('#b-quiz').textContent=L().tabQuiz;
+  $('#q').placeholder=L().search;$('#note').textContent=L().note;
+  document.title=L().h1;
+  $('#l-es').classList.toggle('on',ST.lang==='es');$('#l-en').classList.toggle('on',ST.lang==='en');
+  buildMap();renderSide();renderFilters();renderGloss();renderQuiz();
+}
+function setLang(l){ST.lang=l;persist();applyLang()}
+$('#l-es').addEventListener('click',()=>setLang('es'));
+$('#l-en').addEventListener('click',()=>setLang('en'));
+
+applyLang();
+</script>
+</body>
+</html>
