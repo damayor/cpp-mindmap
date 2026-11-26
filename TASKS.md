@@ -34,7 +34,7 @@ Dependencias clave: 8 requiere 7 (HTTPS y `--public-url`); 6.1 ya incluye revisi
 - [x] 0.1 Instalar el toolchain: `rustup`, target `wasm32-unknown-unknown`, `trunk`, y la extensión rust-analyzer en VS Code.
   - Estado: rustc 1.100.0, cargo 1.100.0, trunk 0.22.2 y el target wasm instalados. rust-analyzer verificado (botón Run en un proyecto de prueba).
   - Aceptación: `rustc --version`, `trunk --version` y rust-analyzer funcionando en un archivo de prueba.
-- [ ] 0.2 Crear el repo, copiar el HTML original a `reference/cpp-mapa.html`, y crear `CLAUDE.md` y `TASKS.md`.
+- [x] 0.2 Crear el repo, copiar el HTML original a `reference/cpp-mapa.html`, y crear `CLAUDE.md` y `TASKS.md`.
   - Aceptación: estructura de carpetas creada, `git init` hecho.
 - [ ] 0.3 Analizar el HTML original y documentar en `docs/analisis.md`: pestañas, estructuras de datos, funciones de JS, claves de `localStorage`, textos de interfaz, dependencias externas, tamaño.
   - Aceptación: lista completa de funciones a migrar y de datos a extraer. Aquí se completa o corrige esta lista de tareas.
@@ -165,3 +165,4 @@ Anota aquí, por fecha, lo que se terminó y lo que se aprendió.
 | Fecha | Tarea | Notas y aprendizajes |
 |---|---|---|
 | 2026-11-23 | 0.1 | Toolchain instalado. En WSL falló la red por IPv6 (se resolvió con `RUSTUP_USE_CURL=1` e IPs IPv4 en `/etc/hosts`). VS Code no veía `cargo` hasta reiniciar con `wsl --shutdown`: el servidor hereda el `PATH` de cuando arrancó. |
+| 2026-11-23 | 0.2 | Repo `cpp-mindmap` creado y conectado a GitHub. HTML original movido con `git mv` a `reference/cpp-mapa.html` (conserva el historial), carpetas `data/` y `docs/`, y `.gitignore` con `/target` y `/dist`. |

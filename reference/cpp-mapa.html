@@ -112,6 +112,13 @@ input[type=search]{flex:1;min-width:220px;background:var(--panel);border:1px sol
 .qmiss li{background:var(--panel2);border-left:4px solid var(--k);border-radius:8px;padding:8px 12px;font-size:14px}
 .qmiss b{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--k)}
 .qkeys{color:var(--mut);font-size:12px;margin-top:12px}
+
+pre.code{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0 6px;overflow:auto;font:13.5px/1.55 ui-monospace,Menlo,Consolas,monospace;color:#d6e2ee;white-space:pre;-webkit-user-select:text;user-select:text}
+.lgbadge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;color:#0f1419;margin-right:8px}
+.cask{font-size:16px;margin:14px 0 12px;font-weight:600}
+.cnote{color:var(--mut);font-size:12.5px;margin:2px 0 12px}
+.qopt.plain{font-family:ui-monospace,Menlo,Consolas,monospace}
+.qexp{margin-top:10px;font-size:14px;color:var(--tx)}
 </style>
 </head>
 <body>
@@ -123,6 +130,7 @@ input[type=search]{flex:1;min-width:220px;background:var(--panel);border:1px sol
   <button id="b-map" class="on"></button>
   <button id="b-gl"></button>
   <button id="b-quiz"></button>
+  <button id="b-code"></button>
   <div class="lang" role="group" aria-label="Language / Idioma">
     <button id="l-es">ES</button><button id="l-en">EN</button>
   </div>
@@ -149,6 +157,9 @@ input[type=search]{flex:1;min-width:220px;background:var(--panel);border:1px sol
   </section>
   <section id="v-quiz" class="view">
     <div class="qwrap" id="quiz"></div>
+  </section>
+  <section id="v-code" class="view">
+    <div class="qwrap" id="code"></div>
   </section>
 </main>
 
@@ -690,6 +701,113 @@ const GL_EN={
  'Signals and slots':'Qt mechanism to connect events to handlers without tight coupling.'
 };
 /* EN-END */
+/* CQ-START */
+const CQ=[
+ {lang:'cpp',pre:'',body:'int a[3] = {1, 2, 3};\nint* p = a;\ncout << *(p + 1) << " " << sizeof(a) / sizeof(a[0]);',
+  opts:['2 3','1 3','2 12','2 4'],ans:0,expect:'2 3',term:'Pointer arithmetic',
+  exp:{es:'p + 1 apunta a a[1], que vale 2. sizeof(a) son 12 bytes (3 ints de 4 bytes) y dividido entre sizeof(a[0]) da 3 elementos.',en:'p + 1 points to a[1], which is 2. sizeof(a) is 12 bytes (3 ints of 4 bytes), and dividing by sizeof(a[0]) gives 3 elements.'}},
+ {lang:'cpp',pre:'void f(int a[]) { cout << sizeof(a); }',body:'int x[10];\nf(x);',
+  ask:{es:'¿Qué imprime en un sistema de 64 bits?',en:'What does it print on a 64-bit system?'},
+  opts:['40','8','10','4'],ans:1,expect:'8',term:'Array decay',
+  exp:{es:'Al pasar un array a una función "decae" a un puntero. Dentro de f, a es un int* y sizeof(a) es el tamaño de un puntero (8 bytes en 64 bits), no el del array.',en:'An array passed to a function decays to a pointer. Inside f, a is an int*, and sizeof(a) is the size of a pointer (8 bytes on 64-bit), not of the array.'}},
+ {lang:'cpp',pre:'',body:'vector<int> v;\nv.reserve(10);\ncout << v.size() << " " << (v.capacity() >= 10);',
+  opts:['0 1','10 1','0 0','@UB@'],ans:0,expect:'0 1',term:'std::vector',
+  exp:{es:'reserve solo reserva espacio (capacity). El size sigue en 0 porque no se agregó ningún elemento.',en:'reserve only allocates space (capacity). The size stays 0 because no element was added.'}},
+ {lang:'cpp',pre:'',body:'vector<int> v(3);\nv[5] = 1;',
+  ask:{es:'¿Qué ocurre?',en:'What happens?'},
+  opts:['@UB@',{es:'Lanza std::out_of_range',en:'Throws std::out_of_range'},{es:'El vector crece a 6 elementos',en:'The vector grows to 6 elements'},'@CE@'],ans:0,term:'Undefined behavior',
+  exp:{es:'operator[] no revisa límites: el índice 5 está fuera de size() = 3, y eso es comportamiento indefinido. Para revisar límites se usa at().',en:'operator[] does not check bounds: index 5 is outside size() = 3, which is undefined behavior. Use at() for bounds checking.'}},
+ {lang:'cpp',pre:'',body:'vector<int> v(3);\ntry { v.at(5) = 1; }\ncatch (const out_of_range&) { cout << "caught"; }',
+  opts:['caught','@UB@',{es:'No imprime nada',en:'Prints nothing'},'@CE@'],ans:0,expect:'caught',term:'std::vector',
+  exp:{es:'at() sí revisa límites y lanza std::out_of_range, que el catch captura.',en:'at() does check bounds and throws std::out_of_range, which the catch handles.'}},
+ {lang:'cpp',pre:'struct Base { ~Base() { cout << "~Base "; } };\nstruct Derived : Base { ~Derived() { cout << "~Derived "; } };',body:'Base* b = new Derived;\ndelete b;',
+  ask:{es:'¿Qué garantiza el estándar?',en:'What does the standard guarantee?'},
+  opts:['@UB@','~Derived ~Base','~Base ~Derived',{es:'Error de compilación',en:'Compile error'}],ans:0,term:'Virtual destructor',
+  exp:{es:'Borrar un objeto derivado por un puntero a base sin destructor virtual es comportamiento indefinido. En la práctica suele llamar solo ~Base y dejar sin liberar lo de Derived.',en:'Deleting a derived object through a base pointer without a virtual destructor is undefined behavior. In practice it usually calls only ~Base and leaks what Derived owns.'}},
+ {lang:'cpp',pre:'struct Base { virtual ~Base() { cout << "~Base "; } };\nstruct Derived : Base { ~Derived() override { cout << "~Derived "; } };',body:'Base* b = new Derived;\ndelete b;',
+  opts:['~Derived ~Base','~Base ~Derived','~Base','@UB@'],ans:0,expect:'~Derived ~Base',term:'Virtual destructor',
+  exp:{es:'Con destructor virtual se destruye primero la parte derivada y luego la base, en ese orden.',en:'With a virtual destructor the derived part is destroyed first and then the base, in that order.'}},
+ {lang:'cpp',pre:'',body:'int x = 1, y = 2;\nconst int* p = &x;\np = &y;    // (A)\n*p = 5;    // (B)',
+  ask:{es:'¿Cuáles líneas compilan?',en:'Which lines compile?'},
+  opts:[{es:'Solo A',en:'Only A'},{es:'Solo B',en:'Only B'},{es:'A y B',en:'Both A and B'},{es:'Ninguna',en:'Neither'}],ans:0,term:'const',
+  exp:{es:'const int* es un puntero a int constante: puedes cambiar a dónde apunta (A) pero no el valor (B).',en:'const int* is a pointer to a constant int: you can change where it points (A) but not the value (B).'}},
+ {lang:'cpp',pre:'',body:'int x = 1, y = 2;\nint* const p = &x;\n*p = 5;    // (A)\np = &y;    // (B)',
+  ask:{es:'¿Cuáles líneas compilan?',en:'Which lines compile?'},
+  opts:[{es:'Solo A',en:'Only A'},{es:'Solo B',en:'Only B'},{es:'A y B',en:'Both A and B'},{es:'Ninguna',en:'Neither'}],ans:0,term:'const',
+  exp:{es:'int* const es un puntero constante a int: puedes cambiar el valor (A) pero no a dónde apunta (B). Regla: el const se aplica a lo que tiene a su izquierda.',en:'int* const is a constant pointer to int: you can change the value (A) but not where it points (B). Rule: const applies to what is on its left.'}},
+ {lang:'cpp',pre:'',body:'auto a = make_unique<int>(1);\nauto b = a;',
+  ask:{es:'¿Qué ocurre?',en:'What happens?'},
+  opts:['@CE@',{es:'b y a comparten el objeto',en:'b and a share the object'},{es:'b recibe una copia del int',en:'b gets a copy of the int'},'@UB@'],ans:0,expect:'@CE@',term:'unique_ptr',
+  exp:{es:'unique_ptr tiene la copia eliminada porque la propiedad es exclusiva. Hay que mover: auto b = std::move(a);',en:'unique_ptr has its copy deleted because ownership is exclusive. You must move: auto b = std::move(a);'}},
+ {lang:'cpp',pre:'',body:'auto a = make_unique<int>(7);\nauto b = move(a);\ncout << (a == nullptr) << " " << *b;',
+  opts:['1 7','0 7','7 7','@UB@'],ans:0,expect:'1 7',term:'Move semantics',
+  exp:{es:'Tras el move, a queda vacío (nullptr) y b es el dueño del entero 7.',en:'After the move, a is empty (nullptr) and b owns the integer 7.'}},
+ {lang:'cpp',pre:'',body:'auto a = make_shared<int>(1);\nauto b = a;\nauto c = a;\nb.reset();\ncout << a.use_count();',
+  opts:['1','2','3','0'],ans:1,expect:'2',term:'shared_ptr',
+  exp:{es:'Eran 3 dueños (a, b, c). b.reset() suelta su parte y quedan 2: a y c.',en:'There were 3 owners (a, b, c). b.reset() releases its share, leaving 2: a and c.'}},
+ {lang:'cpp',pre:'',body:'weak_ptr<int> w;\n{\n  auto s = make_shared<int>(5);\n  w = s;\n  cout << w.use_count() << " ";\n}\ncout << w.expired();',
+  opts:['1 1','2 1','1 0','2 0'],ans:0,expect:'1 1',term:'shared_ptr',
+  exp:{es:'weak_ptr no cuenta como dueño, así que use_count es 1. Al salir del bloque s se destruye, el objeto se libera y w.expired() es true (1).',en:'weak_ptr does not count as an owner, so use_count is 1. When the block ends s is destroyed, the object is freed and w.expired() is true (1).'}},
+ {lang:'cpp',pre:'',body:'int total = 0;\nvector<int> v = {1, 2, 3};\nfor_each(v.begin(), v.end(), [total](int x) mutable { total += x; });\ncout << total;',
+  opts:['0','6','@CE@','@UB@'],ans:0,expect:'0',term:'Lambda',
+  exp:{es:'[total] captura por valor: la lambda modifica su copia interna (posible gracias a mutable), no la variable original, que sigue en 0.',en:'[total] captures by value: the lambda modifies its own internal copy (possible thanks to mutable), not the original variable, which stays 0.'}},
+ {lang:'cpp',pre:'',body:'int total = 0;\nvector<int> v = {1, 2, 3};\nfor_each(v.begin(), v.end(), [&total](int x) { total += x; });\ncout << total;',
+  opts:['0','6','@CE@','3'],ans:1,expect:'6',term:'Lambda',
+  exp:{es:'[&total] captura por referencia, así que la lambda modifica la variable original: 1+2+3 = 6.',en:'[&total] captures by reference, so the lambda modifies the original variable: 1+2+3 = 6.'}},
+ {lang:'cpp',pre:'struct A { virtual void f() { cout << "A"; } };\nstruct B : A { void f() override { cout << "B"; } };',body:'B b;\nA& r = b;\nA c = b;\nr.f();\nc.f();',
+  opts:['BA','AB','BB','AA'],ans:0,expect:'BA',term:'Object slicing',
+  exp:{es:'Por referencia (r) hay despacho virtual y se llama B::f. Al copiar por valor (c) ocurre slicing: c es un A puro y llama A::f.',en:'Through the reference (r) there is virtual dispatch and B::f is called. Copying by value (c) causes slicing: c is a plain A and calls A::f.'}},
+ {lang:'cpp',pre:'',body:'int i = 1;\nint r = i++ + ++i;',
+  ask:{es:'¿Cuál es el valor de r?',en:'What is the value of r?'},
+  opts:['3','4','@UB@','5'],ans:2,term:'Undefined behavior',
+  exp:{es:'Modificar i dos veces en la misma expresión sin orden definido es comportamiento indefinido. Cualquier resultado "funciona" según el compilador.',en:'Modifying i twice in the same expression with no defined order is undefined behavior. Whatever result you see depends on the compiler.'}},
+ {lang:'cpp',pre:'',body:'cout << 7 / 2 << " " << 7 / 2.0 << " " << -7 / 2 << " " << -7 % 3;',
+  opts:['3 3.5 -3 -1','3 3.5 -4 2','4 3.5 -3 -1','3 3 -3 -1'],ans:0,expect:'3 3.5 -3 -1',term:'Integer overflow',
+  exp:{es:'7/2 es división entera (3) y 7/2.0 es decimal (3.5). La división entera trunca hacia cero: -7/2 = -3 y el resto -7%3 = -1, con el signo del dividendo.',en:'7/2 is integer division (3) and 7/2.0 is floating point (3.5). Integer division truncates toward zero: -7/2 = -3 and the remainder -7%3 = -1, with the sign of the dividend.'}},
+ {lang:'cpp',pre:'',body:'unsigned int u = 0;\nu--;\ncout << (u > 0);',
+  opts:['1','0','@UB@','@CE@'],ans:0,expect:'1',term:'Integer overflow',
+  exp:{es:'Los unsigned dan la vuelta de forma definida: 0 - 1 se convierte en UINT_MAX, que es mayor que 0.',en:'Unsigned values wrap around in a defined way: 0 - 1 becomes UINT_MAX, which is greater than 0.'}},
+ {lang:'cpp',pre:'',body:'int x = INT_MAX;\nx++;',
+  ask:{es:'¿Qué ocurre?',en:'What happens?'},
+  opts:[{es:'x vale INT_MIN (da la vuelta)',en:'x becomes INT_MIN (wraps around)'},'@UB@',{es:'Lanza una excepción',en:'Throws an exception'},'@CE@'],ans:1,term:'Integer overflow',
+  exp:{es:'El overflow de enteros con signo es comportamiento indefinido en C y C++. Solo los unsigned dan la vuelta de forma definida.',en:'Signed integer overflow is undefined behavior in C and C++. Only unsigned values wrap in a defined way.'}},
+ {lang:'cpp',pre:'',body:'int* p = new int[3];\ndelete p;',
+  ask:{es:'¿Qué ocurre?',en:'What happens?'},
+  opts:['@UB@',{es:'Libera solo el primer int',en:'Frees only the first int'},{es:'Funciona igual que delete[]',en:'Works the same as delete[]'},'@CE@'],ans:0,term:'Undefined behavior',
+  exp:{es:'Memoria creada con new[] debe liberarse con delete[]. Usar delete es comportamiento indefinido.',en:'Memory created with new[] must be freed with delete[]. Using delete is undefined behavior.'}},
+ {lang:'cpp',pre:'int& f() {\n  int x = 5;\n  return x;\n}',body:'cout << f();',
+  ask:{es:'¿Qué ocurre?',en:'What happens?'},
+  opts:[{es:'Imprime 5 siempre',en:'Always prints 5'},'@UB@','@CE@',{es:'Imprime 0',en:'Prints 0'}],ans:1,term:'Dangling pointer',
+  exp:{es:'Devuelve una referencia a una variable local que ya no existe (dangling). Compila, con warning, pero usarla es comportamiento indefinido.',en:'It returns a reference to a local variable that no longer exists (dangling). It compiles, with a warning, but using it is undefined behavior.'}},
+ {lang:'cpp',pre:'struct S {\n  int* p = new int(1);\n  ~S() { delete p; }\n};',body:'{\n  S a;\n  S b = a;\n}',
+  ask:{es:'¿Qué ocurre al salir del bloque?',en:'What happens when the block ends?'},
+  opts:['@UB@',{es:'Todo bien, b hace copia profunda',en:'Fine, b makes a deep copy'},{es:'Solo hay una fuga de memoria',en:'Just a memory leak'},'@CE@'],ans:0,term:'Rule of Three/Five/Zero',
+  exp:{es:'La copia por defecto copia el puntero, no el int. a y b hacen delete del mismo puntero: doble liberación. Se arregla con la Rule of Three/Five/Zero (o con unique_ptr).',en:'The default copy copies the pointer, not the int. a and b both delete the same pointer: double free. Fix it with the Rule of Three/Five/Zero (or with unique_ptr).'}},
+ {lang:'cpp',pre:'',body:'vector<int> v = {1, 2, 3};\nfor (auto x : v) x *= 2;\ncout << v[0];',
+  opts:['1','2','@CE@','@UB@'],ans:0,expect:'1',term:'Range-based for',
+  exp:{es:'auto x copia cada elemento, así que modificar x no toca el vector. Para modificarlo se usa auto& x.',en:'auto x copies each element, so changing x does not touch the vector. To modify it, use auto& x.'}},
+ {lang:'cpp',pre:'',body:'map<string, int> m;\nif (m["a"] == 0) cout << m.size();',
+  opts:['1','0','@UB@','@CE@'],ans:0,expect:'1',term:'std::map / unordered_map',
+  exp:{es:'operator[] inserta la clave "a" con valor 0 si no existe. Por eso, tras el if, el mapa ya tiene 1 elemento.',en:'operator[] inserts the key "a" with value 0 if it does not exist. That is why the map already has 1 element after the if.'}},
+ {lang:'c',pre:'void f(void) {\n  static int n = 0;\n  n++;\n  printf("%d", n);\n}',body:'f();\nf();\nf();',
+  opts:['123','111','012','000'],ans:0,expect:'123',term:'static',
+  exp:{es:'Una variable static dentro de una función se inicializa una sola vez y conserva su valor entre llamadas.',en:'A static variable inside a function is initialized only once and keeps its value between calls.'}},
+ {lang:'c',pre:'',body:'char s[] = "hello";\nprintf("%zu %zu", sizeof(s), strlen(s));',
+  opts:['6 5','5 5','6 6','5 6'],ans:0,expect:'6 5',term:'C string',
+  exp:{es:'sizeof cuenta el terminador \\0 (6 bytes), strlen no lo cuenta (5 caracteres).',en:'sizeof counts the \\0 terminator (6 bytes); strlen does not (5 characters).'}},
+ {lang:'c',pre:'',body:'int a[] = {10, 20, 30, 40};\nint* p = a + 3;\nprintf("%d %ld", *(p - 2), (long)(p - a));',
+  opts:['20 3','30 3','20 12','30 2'],ans:0,expect:'20 3',term:'Pointer arithmetic',
+  exp:{es:'p apunta a a[3]. p - 2 apunta a a[1] = 20. Restar dos punteros da la distancia en elementos (3), no en bytes.',en:'p points to a[3]. p - 2 points to a[1] = 20. Subtracting two pointers gives the distance in elements (3), not bytes.'}},
+ {lang:'c',pre:'#define SQUARE(x) x * x',body:'printf("%d", SQUARE(2 + 3));',
+  opts:['11','25','10','@CE@'],ans:0,expect:'11',term:'Macro',
+  exp:{es:'La macro hace sustitución de texto: 2 + 3 * 2 + 3 = 11. Por eso se escribe #define SQUARE(x) ((x) * (x)).',en:'The macro does text substitution: 2 + 3 * 2 + 3 = 11. That is why you write #define SQUARE(x) ((x) * (x)).'}},
+ {lang:'c',pre:'struct S { int i; double d; };\nunion  U { int i; double d; };',body:'printf("%zu %zu", sizeof(struct S), sizeof(union U));',
+  ask:{es:'¿Qué imprime en un sistema típico de 64 bits?',en:'What does it print on a typical 64-bit system?'},
+  opts:['16 8','12 8','12 12','8 16'],ans:0,expect:'16 8',term:'union',
+  exp:{es:'El struct guarda ambos campos más padding de alineación (4 + 4 de padding + 8 = 16). La union comparte la memoria y mide lo del campo más grande (8).',en:'The struct stores both fields plus alignment padding (4 + 4 padding + 8 = 16). The union shares memory and is as big as its largest field (8).'}}
+];
+/* CQ-END */
+
 
 /* ---------- UI strings ---------- */
 const T={
@@ -698,6 +816,10 @@ const T={
   sub:'Basado en la guía de contratación de BairesDev (23 skills técnicos). Los textos son resúmenes propios. Haz click en cualquier skill para ver el detalle.',
   tabMap:'Mapa mental',tabGl:'Glosario',
   tabQuiz:'Quiz',
+  tabCode:'Código',
+  cTitle:'Predice la salida del código',cSub:'Lees un fragmento y eliges qué imprime o qué ocurre. Es el formato típico de las pruebas de proficiencia.',
+  cLang:'Lenguaje',cAll:'Todos',cNote:'Los fragmentos van dentro de main(), con los #include necesarios y using namespace std; en C++.',
+  cAsk:'¿Qué imprime?',cSeeTerm:'Ver en el glosario',cExplain:'Explicación',cAvail:'preguntas disponibles',cCorrectWas:'Respuesta correcta',
   qTitle:'Quiz: elige el concepto correcto',qSub:'Te muestro una definición y tú eliges a qué concepto corresponde.',
   qPool:'Términos',qPoolPending:'Pendientes',qPoolPrio:'Solo prioritarios',qPoolAll:'Todos',qCat:'Categoría',qLen:'Preguntas',
   qAvail:'términos disponibles',qStart:'Empezar',qNoPool:'No hay términos con esa selección. Cambia el filtro.',qWeight:'Los prioritarios salen con más frecuencia.',
@@ -723,6 +845,10 @@ const T={
   sub:'Based on the BairesDev hiring guide (23 technical skills). Texts are original summaries. Click any skill to see the details.',
   tabMap:'Mind map',tabGl:'Glossary',
   tabQuiz:'Quiz',
+  tabCode:'Code',
+  cTitle:'Predict the code output',cSub:'You read a snippet and pick what it prints or what happens. This is the typical format of proficiency tests.',
+  cLang:'Language',cAll:'All',cNote:'Snippets go inside main(), with the needed #include lines and using namespace std; in C++.',
+  cAsk:'What does it print?',cSeeTerm:'See in glossary',cExplain:'Explanation',cAvail:'questions available',cCorrectWas:'Correct answer',
   qTitle:'Quiz: pick the right concept',qSub:'I show you a definition and you choose the concept it belongs to.',
   qPool:'Terms',qPoolPending:'Pending',qPoolPrio:'Priority only',qPoolAll:'All',qCat:'Category',qLen:'Questions',
   qAvail:'terms available',qStart:'Start',qNoPool:'No terms match this selection. Change the filter.',qWeight:'Priority terms show up more often.',
@@ -1029,25 +1155,122 @@ document.addEventListener('keydown',e=>{
   else if((e.key==='Enter'||e.key===' ')&&s.ans&&s.i<s.qs.length){e.preventDefault();qNext()}
 });
 
+
+/* ---------- Code output game ---------- */
+const CO={lang:'all',len:10,s:null};
+const TOK={'@UB@':{es:'Comportamiento indefinido',en:'Undefined behavior'},'@CE@':{es:'Error de compilación',en:'Compile error'}};
+const optTxt=o=>typeof o==='string'?(TOK[o]?TOK[o][ST.lang]:o):o[ST.lang];
+const LGC={cpp:'#4f9cf9',c:'#e8e8e8'};
+const lgName=l=>l==='cpp'?'C++':'C';
+const cPool=()=>CQ.filter(q=>CO.lang==='all'||q.lang===CO.lang);
+function startCode(){
+  const pool=cPool();if(!pool.length)return;
+  const picked=shuffle(pool).slice(0,Math.min(CO.len,pool.length));
+  CO.s={qs:picked.map(q=>({q,order:shuffle(q.opts.map((_,i)=>i))})),i:0,score:0,streak:0,best:0,ans:null,missed:[]};
+  renderCode();
+}
+function renderCode(){
+  const box=$('#code'),l=L(),s=CO.s;
+  if(!s){
+    const n=cPool().length;
+    const langs=[['all',l.cAll],['cpp','C++'],['c','C']];
+    box.innerHTML=`<div class="qcard">
+      <h2 style="margin:0 0 4px;font-size:20px">${esc(l.cTitle)}</h2>
+      <p class="hint" style="margin:0 0 16px">${esc(l.cSub)}</p>
+      <div class="row"><span class="lbl">${esc(l.cLang)}</span>${langs.map(([k,nm])=>`<button class="${CO.lang===k?'on':''}" data-clang="${k}">${esc(nm)}</button>`).join('')}</div>
+      <div class="row"><span class="lbl">${esc(l.qLen)}</span>${[5,10,20].map(k=>`<button class="${CO.len===k?'on':''}" data-clen="${k}">${k}</button>`).join('')}</div>
+      <p class="hint" style="margin:10px 0 14px">${n} ${esc(l.cAvail)}. ${esc(l.cNote)}</p>
+      <button class="btn primary" data-cact="start" ${n?'':'disabled'}>${esc(l.qStart)}</button>
+    </div>`;
+    return;
+  }
+  if(s.i>=s.qs.length){
+    const N=s.qs.length,pct=Math.round(s.score/N*100);
+    const msg=pct>=80?l.qMsgHi:(pct>=50?l.qMsgMid:l.qMsgLo);
+    box.innerHTML=`<div class="qcard">
+      <div class="qhead"><b>${esc(l.qDone)}</b><span>${esc(l.qStreak)}: <b>${s.best}</b></span></div>
+      <div class="qscore">${s.score} / ${N} <span style="font-size:20px;color:var(--mut)">(${pct}%)</span></div>
+      <p>${esc(s.missed.length?msg:l.qPerfect)}</p>
+      ${s.missed.length?`<h4 style="margin:16px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)">${esc(l.qMissed)}</h4>
+      <ul class="qmiss">${s.missed.map(q=>`<li style="--k:${gcColor(gIndex[q.term]?gIndex[q.term].c:'Lenguaje')}"><b>${esc(q.term)}</b>: ${esc(q.exp[ST.lang])}</li>`).join('')}</ul>`:''}
+      <div class="qbtns">
+        <button class="btn primary" data-cact="again">${esc(l.qAgain)}</button>
+        ${s.missed.length?`<button class="btn" data-cact="prioMissed">★ ${esc(l.qPrioMissed)}</button>`:''}
+        <button class="btn" data-cact="settings">${esc(l.qSettings)}</button>
+      </div></div>`;
+    return;
+  }
+  const {q,order}=s.qs[s.i],N=s.qs.length,ans=s.ans,tm=q.term,isP=prioSet.has(tm);
+  const code=(q.pre?q.pre+'\n\n':'')+q.body;
+  box.innerHTML=`<div class="qcard">
+    <div class="qhead"><span>${esc(l.qQ)} <b>${s.i+1}/${N}</b></span><span>${esc(l.qHits)}: <b>${s.score}</b></span><span>${esc(l.qStreak)}: <b>${s.streak}</b> ${s.streak>=3?'🔥':''}</span><span style="margin-left:auto"><button class="btn" data-cact="settings" style="padding:3px 10px;font-size:12px">${esc(l.qSettings)}</button></span></div>
+    <div class="qprog"><i style="width:${(s.i+(ans!==null?1:0))/N*100}%"></i></div>
+    <span class="lgbadge" style="background:${LGC[q.lang]}">${lgName(q.lang)}</span>
+    <pre class="code">${esc(code)}</pre>
+    <p class="cask">${esc(q.ask?q.ask[ST.lang]:l.cAsk)}</p>
+    <div class="qopts">${order.map((oi,k)=>{
+      let cls='';
+      if(ans!==null){if(oi===q.ans)cls='right';else if(oi===ans)cls='wrong';else cls='faded'}
+      return `<button class="qopt plain ${cls}" style="--k:var(--c1)" data-copt="${oi}" ${ans!==null?'disabled':''}><span class="n">${k+1}</span>${esc(optTxt(q.opts[oi]))}</button>`;
+    }).join('')}</div>
+    ${ans!==null?`<div class="qfb ${ans===q.ans?'ok':'bad'}">${ans===q.ans?'✓ '+esc(l.qRight):'✗ '+esc(l.cCorrectWas)+': <b>'+esc(optTxt(q.opts[q.ans]))+'</b>'}
+      <div class="qexp">${esc(q.exp[ST.lang])}</div></div>
+    <div class="qbtns">
+      <button class="btn primary" data-cact="next">${esc(s.i+1>=N?l.qFinish:l.qNext)}</button>
+      <button class="btn" data-cact="term">${esc(l.cSeeTerm)}: ${esc(tm)}</button>
+      <button class="btn ${isP?'on':''}" data-cact="prio">★ ${esc(isP?l.btnPrioOn:l.btnPrio)}</button>
+    </div>`:''}
+    <p class="qkeys">${esc(l.qKeys)}</p></div>`;
+}
+function cAnswer(oi){
+  const s=CO.s;if(!s||s.ans!==null||s.i>=s.qs.length)return;
+  const q=s.qs[s.i].q;s.ans=oi;
+  if(oi===q.ans){s.score++;s.streak++;s.best=Math.max(s.best,s.streak)}else{s.streak=0;s.missed.push(q)}
+  renderCode();
+}
+function cNext(){const s=CO.s;if(!s||s.ans===null)return;s.i++;s.ans=null;renderCode()}
+$('#code').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const d=b.dataset;
+  if(d.clang){CO.lang=d.clang;renderCode()}
+  else if(d.clen){CO.len=+d.clen;renderCode()}
+  else if(d.copt!==undefined)cAnswer(+d.copt);
+  else if(d.cact==='start'||d.cact==='again')startCode();
+  else if(d.cact==='settings'){CO.s=null;renderCode()}
+  else if(d.cact==='next')cNext();
+  else if(d.cact==='term')gotoTerm(CO.s.qs[CO.s.i].q.term);
+  else if(d.cact==='prio'){const t=CO.s.qs[CO.s.i].q.term;if(prioSet.has(t))prioSet.delete(t);else{prioSet.add(t);doneSet.delete(t)}persist();renderGloss();renderSide();renderCode()}
+  else if(d.cact==='prioMissed'){CO.s.missed.forEach(q=>{prioSet.add(q.term);doneSet.delete(q.term)});persist();renderGloss();renderSide();b.disabled=true;b.textContent='★ ✓'}
+});
+document.addEventListener('keydown',e=>{
+  if(!$('#v-code').classList.contains('on')||!CO.s)return;
+  if(e.target.tagName==='INPUT')return;
+  const s=CO.s;
+  if(s.i<s.qs.length&&s.ans===null&&/^[1-4]$/.test(e.key)){const o=s.qs[s.i].order[+e.key-1];if(o!==undefined){e.preventDefault();cAnswer(o)}}
+  else if((e.key==='Enter'||e.key===' ')&&s.ans!==null&&s.i<s.qs.length){e.preventDefault();cNext()}
+});
+
 /* ---------- Tabs and language ---------- */
 function show(v){
-  ['map','gl','quiz'].forEach(k=>{
+  ['map','gl','quiz','code'].forEach(k=>{
     $('#v-'+k).classList.toggle('on',v===k);$('#b-'+k).classList.toggle('on',v===k);
   });
   if(v==='quiz')renderQuiz();
+  if(v==='code')renderCode();
 }
 $('#b-map').addEventListener('click',()=>show('map'));
 $('#b-gl').addEventListener('click',()=>show('gl'));
 $('#b-quiz').addEventListener('click',()=>show('quiz'));
+$('#b-code').addEventListener('click',()=>show('code'));
 
 function applyLang(){
   document.documentElement.lang=ST.lang;
   $('#t-h1').textContent=L().h1;$('#t-sub').textContent=L().sub;
-  $('#b-map').textContent=L().tabMap;$('#b-gl').textContent=L().tabGl;$('#b-quiz').textContent=L().tabQuiz;
+  $('#b-map').textContent=L().tabMap;$('#b-gl').textContent=L().tabGl;$('#b-quiz').textContent=L().tabQuiz;$('#b-code').textContent=L().tabCode;
   $('#q').placeholder=L().search;$('#note').textContent=L().note;
   document.title=L().h1;
   $('#l-es').classList.toggle('on',ST.lang==='es');$('#l-en').classList.toggle('on',ST.lang==='en');
-  buildMap();renderSide();renderFilters();renderGloss();renderQuiz();
+  buildMap();renderSide();renderFilters();renderGloss();renderQuiz();renderCode();
 }
 function setLang(l){ST.lang=l;persist();applyLang()}
 $('#l-es').addEventListener('click',()=>setLang('es'));
