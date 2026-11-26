@@ -166,3 +166,15 @@ Anota aquí, por fecha, lo que se terminó y lo que se aprendió.
 |---|---|---|
 | 2026-11-23 | 0.1 | Toolchain instalado. En WSL falló la red por IPv6 (se resolvió con `RUSTUP_USE_CURL=1` e IPs IPv4 en `/etc/hosts`). VS Code no veía `cargo` hasta reiniciar con `wsl --shutdown`: el servidor hereda el `PATH` de cuando arrancó. |
 | 2026-11-23 | 0.2 | Repo `cpp-mindmap` creado y conectado a GitHub. HTML original movido con `git mv` a `reference/cpp-mapa.html` (conserva el historial), carpetas `data/` y `docs/`, y `.gitignore` con `/target` y `/dist`. |
+
+---
+
+## Cambio de prioridad: PWA vanilla JS primero (2026-11-26)
+
+La migración a Rust/Leptos queda en prioridad muy baja. Ahora la app es una PWA vanilla JS (sin build), basada en `deu-fehlerfrei`, instalable en Android.
+
+- [x] Partir `reference/cpp-mapa.html` en `index.html`, `styles.css`, `src/data.js`, `src/app.js` (sin cambiar contenido).
+- [x] Racha y meta diaria (`src/streak.js`, probada con `node --test`), pestaña Hoy (`src/today.js`), service worker offline (`sw.js`).
+- [x] Manifest e iconos (claude.ai) en la raíz. Fusionado con la versión generada por claude.ai: pestaña Ajustes, 2 recordatorios al día, Periodic Sync, deep links `#quiz-go`/`#codigo-go`, exportar/importar progreso.
+- [ ] Publicar en GitHub Pages (HTTPS) y probar la instalación en el celular.
+- [ ] Recordatorio push con la app cerrada (Cloudflare Worker, como `deu-fehlerfrei/worker/push`).

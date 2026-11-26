@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1419">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="C++ Mapa">
+<title>C++: mapa mental de skills técnicos y glosario</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1 id="t-h1"></h1>
+  <p id="t-sub"></p>
+</header>
+<nav>
+  <button id="b-today" class="on"></button>
+  <button id="b-map"></button>
+  <button id="b-gl"></button>
+  <button id="b-quiz"></button>
+  <button id="b-code"></button>
+  <button id="b-set"></button>
+  <div class="lang" role="group" aria-label="Language / Idioma">
+    <button id="l-es">ES</button><button id="l-en">EN</button>
+  </div>
+</nav>
+<div class="duewrap"><div id="due" class="due" hidden></div></div>
+<main>
+  <section id="v-today" class="view on"><div class="qwrap" id="today"></div></section>
+  <section id="v-map" class="view">
+    <div class="map-wrap">
+      <div class="map">
+        <svg id="svg" viewBox="0 0 1300 1000" role="img"></svg>
+        <div class="legend" id="legend"></div>
+      </div>
+      <aside class="side" id="side"></aside>
+    </div>
+  </section>
+  <section id="v-gl" class="view">
+    <div class="tools">
+      <input type="search" id="q">
+    </div>
+    <div class="row" id="status"></div>
+    <div class="row" id="filters"></div>
+    <div class="stats"><span id="count"></span><div class="prog"><i id="prog"></i></div><span id="pct"></span></div>
+    <div class="gl" id="gl"></div>
+    <p class="note" id="note"></p>
+  </section>
+  <section id="v-set" class="view"><div class="setwrap" id="setbox"></div></section>
+  <section id="v-quiz" class="view"><div class="qwrap" id="quiz"></div></section>
+  <section id="v-code" class="view"><div class="qwrap" id="code"></div></section>
+</main>
+<noscript>Esta app necesita JavaScript.</noscript>
+<script src="src/data.js"></script>
+<script src="src/streak.js"></script>
+<script src="src/today.js"></script>
+<script src="src/settings.js"></script>
+<script src="src/app.js"></script>
+<script src="src/boot.js"></script>
+</body>
+</html>
